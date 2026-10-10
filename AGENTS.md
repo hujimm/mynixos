@@ -1,9 +1,9 @@
 # AGENTS.md — mynixos
 
 Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（本机 vostro-3420 桌面）、
-`nixosConfigurations.aliyun`（阿里云 ECS）与 `nixosConfigurations.aws`（AWS EC2），
-后两者是精简服务器、由 nixos-anywhere 安装。
-硬件目录分别是 `hosts/vostro-3420/`、`hosts/aliyun/`、`hosts/aws/`。
+`nixosConfigurations.aliyun`（阿里云 ECS，nixos-anywhere 安装）与
+`nixosConfigurations.lightsail`（AWS Lightsail，nixos-infect 就地安装）。
+硬件目录分别是 `hosts/vostro-3420/`、`hosts/aliyun/`、`hosts/lightsail/`。
 
 ## 硬性规则
 
@@ -29,9 +29,12 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   `hardware-configuration.nix`、`disk-config.nix` 与 disko 模块，**不复用桌面模块**；
   它是 nixos-anywhere 装出来的，改配置后用
   `nixos-rebuild switch --flake .#aliyun --target-host aliyun-ecs`（用户执行）。
-- `hosts/aws/` 同理（`nixosConfigurations.aws`，AWS EC2）。差异：根卷是 NVMe
-  `/dev/nvme0n1`、安装时以 `ubuntu` 用户登录（装完为 root）、缓存官方源优先；
-  重建用 `nixos-rebuild switch --flake .#aws --target-host aws-ec2`（用户执行）。
+- `hosts/lightsail/` 是 AWS Lightsail host（`nixosConfigurations.lightsail`）。它**不走
+  nixos-anywhere/disko**：Lightsail 是 Nitro 平台，kexec 后 ENA/NVMe 不初始化
+  （nixos-anywhere issue #139），且不支持导入镜像；故用 `nixos-infect` 的 lustrate
+  就地安装。`bootstrap.nix` 是自包含配置（显式 UEFI、ESP 在 `/boot/efi`、按 UUID 挂盘），
+  既用于就地安装，也被 flake host 复用。重建用
+  `nixos-rebuild switch --flake .#lightsail --target-host lightsail`（用户执行）。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，
   会被本机 nightly `nix.gc`（`--delete-older-than 3d`）回收，导致每次重建 aliyun 又把
   只属于它的包（如 `operit2-cli`）重编。做法：在本机保留一个 root：

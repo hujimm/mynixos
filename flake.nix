@@ -167,10 +167,10 @@
         modules = [ ./hosts/aliyun ];
       };
 
-      # AWS EC2 云主机（精简服务器系统，由 nixos-anywhere 安装）
-      nixosConfigurations.aws = nixpkgs.lib.nixosSystem {
+      # AWS Lightsail 云主机（就地 nixos-infect 安装，非 disko；见 hosts/lightsail/）
+      nixosConfigurations.lightsail = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
-        modules = [ ./hosts/aws ];
+        modules = [ ./hosts/lightsail ];
       };
     };
 }
