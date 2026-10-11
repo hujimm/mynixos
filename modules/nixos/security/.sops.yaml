@@ -4,6 +4,8 @@ keys:
   - &orion age14v8pr3ucfr9355u2rtqrcg75edjvq3ntd30j3fqryg2jmzccfdhqchkxu7
   # aliyun：由其 SSH host key 派生（ssh-to-age -i /etc/ssh/ssh_host_ed25519_key.pub）
   - &aliyun age1m5qh9pz6n5s3mf7alkw8vld6k2v2xdxplysjc2wwntddjfk8c55q78qhfd
+  # lightsail：由其 SSH host key 派生（同上，在 lightsail 上取 pub key）
+  - &lightsail age1autpg6dygq7rtzq4aqzc9km8r6vdtmvp9kcqne7rlmkl8v3pmeashnlzne
 
 creation_rules:
   # EasyTier 网络口令：桌面 + aliyun 都能解密。规则必须排在通用规则前面（sops 取首个匹配）
@@ -12,6 +14,12 @@ creation_rules:
       - age:
           - *orion
           - *aliyun
+  # Vaultwarden 管理令牌：桌面可编辑、lightsail 可解密（其它主机均不需要）
+  - path_regex: secrets/vaultwarden\.yaml$
+    key_groups:
+      - age:
+          - *orion
+          - *lightsail
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
