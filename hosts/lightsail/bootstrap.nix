@@ -52,8 +52,16 @@
     "uas"
   ];
   boot.initrd.kernelModules = [ "nvme" ];
+  # 强制加载 AWS Nitro 的网卡/磁盘驱动，并引入 AWS 版 ENA 驱动包
+  # （amazon-image.nix 同款；排查"系统起来了但网卡没起来"）。
+  boot.kernelModules = [
+    "ena"
+    "nvme"
+  ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.ena ];
   boot.kernelParams = [
     "nvme_core.io_timeout=4294967295"
+    "random.trust_cpu=on"
     "console=ttyS0,115200n8"
   ];
 
@@ -74,6 +82,16 @@
   users.users.root.openssh.authorizedKeys.keys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRuGFB5F6SHRHgTWG7ne5op18rCBqqNrZF6IPX8JHEUknWu84KaT8E6NfZQiGfgYBL6n7uTpqCqxNl8C0UKGAJcR9S3SR4laUzBwbu0sWs+xc0IStvbfEp/gSMNuo0rSAHM7aEoKVKgmBCYWCENdqGOeP247e0xK+JkFAuNfvtgm3HDekSCuYt8TmUD2pkINes4DJRCtI/lkbfFjqOPW3FvOvxjWxaQ4yWcqI9lwREMGx4RkP4MRH6/B1xFIHu6HwizMC2fkxxgmlJ3YuM+1GERE5ehfWcoYVjIH27vtvDKxnaz7ls00Xp+HF0K7IW6JjzaD2jyaOHE+P2IHpOIaCN aws-nix"
   ];
+
+  # Lightsail 浏览器 SSH 默认以 ubuntu 用户登录；建一个同名用户当"健康探针"，
+  # 这样控制台的 Connect using SSH 能真连进来（NixOS 默认没有 ubuntu 用户）。
+  users.users.ubuntu = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRuGFB5F6SHRHgTWG7ne5op18rCBqqNrZF6IPX8JHEUknWu84KaT8E6NfZQiGfgYBL6n7uTpqCqxNl8C0UKGAJcR9S3SR4laUzBwbu0sWs+xc0IStvbfEp/gSMNuo0rSAHM7aEoKVKgmBCYWCENdqGOeP247e0xK+JkFAuNfvtgm3HDekSCuYt8TmUD2pkINes4DJRCtI/lkbfFjqOPW3FvOvxjWxaQ4yWcqI9lwREMGx4RkP4MRH6/B1xFIHu6HwizMC2fkxxgmlJ3YuM+1GERE5ehfWcoYVjIH27vtvDKxnaz7ls00Xp+HF0K7IW6JjzaD2jyaOHE+P2IHpOIaCN aws-nix"
+    ];
+  };
 
   # 内存 ~1.9GiB，加 2GiB swapfile（与 nixos-infect 的 /tmp 临时 swap 不冲突）
   swapDevices = [
