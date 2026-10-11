@@ -12,7 +12,6 @@
 # 本文件同时被 hosts/lightsail/default.nix 作为 flake host 复用，所以自包含
 # （不依赖 flake inputs、不使用 disko）。
 {
-  config,
   lib,
   pkgs,
   ...
@@ -27,6 +26,15 @@
     device = "nodev";
   };
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
+
+  # 【关键】必须关闭 systemd-initrd！
+  # NixOS 26.05 起 boot.initrd.systemd.enable 默认为 true，而 nixos-infect 依赖的
+  # NIXOS_LUSTRATE（首次启动把旧系统整体挪到 /old-root）只在【bash 版 stage-1】
+  # （stage-1-init.sh 的 lustrateRoot）里实现，systemd-initrd 完全没有这段逻辑。
+  # 若不关闭，首次启动不会挪走旧 Ubuntu 的 /etc、/usr，导致 Ubuntu 的 systemd
+  # 单元（systemd-networkd/resolved/dbus 等）泄漏进来、网络起不来——这正是
+  # Lightsail/EC2 上"装完重启即失联"的真因（已在 EC2 串口日志中确认）。
+  boot.initrd.systemd.enable = false;
 
   # 磁盘按 UUID 引用（nixos-infect 会把根分区 relabel 成 nixos，UUID 不变）
   fileSystems."/" = {
@@ -52,13 +60,6 @@
     "uas"
   ];
   boot.initrd.kernelModules = [ "nvme" ];
-  # 强制加载 AWS Nitro 的网卡/磁盘驱动，并引入 AWS 版 ENA 驱动包
-  # （amazon-image.nix 同款；排查"系统起来了但网卡没起来"）。
-  boot.kernelModules = [
-    "ena"
-    "nvme"
-  ];
-  boot.extraModulePackages = [ config.boot.kernelPackages.ena ];
   boot.kernelParams = [
     "nvme_core.io_timeout=4294967295"
     "random.trust_cpu=on"
