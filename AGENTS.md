@@ -35,13 +35,14 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   就地安装。`bootstrap.nix` 是自包含配置（显式 UEFI、ESP 在 `/boot/efi`、按 UUID 挂盘），
   既用于就地安装，也被 flake host 复用。重建用
   `nixos-rebuild switch --flake .#lightsail --target-host lightsail`（用户执行）。
-  **坑（已修，勿删）**：`bootstrap.nix` 里的 `boot.initrd.systemd.enable = false;` 必须保留。
-  NixOS 26.05 起该选项默认为 true，而 nixos-infect 依赖的 `NIXOS_LUSTRATE`（首次启动把旧
-  Ubuntu 整体挪到 `/old-root`）只在 bash 版 stage-1 的 `lustrateRoot` 里实现，systemd-initrd
-  完全没有这段逻辑。若开启 systemd-initrd，首次启动不会挪走旧 Ubuntu 的 `/etc`、`/usr`，
-  Ubuntu 的 systemd 单元（networkd/resolved/dbus 等）会泄漏进来、网络起不来 → 装完重启即
-  失联（Lightsail 与 EC2 表现一致，已在 EC2 串口日志实锤）。nixos-infect 的 `PROVIDER=lightsail`
-  预设未处理此点，故自带 `bootstrap.nix`；升级/重建时不要动这一行。
+  **坑（注意）**：`bootstrap.nix` 里的 `boot.initrd.systemd.enable = false;` 默认是**注释掉的**，
+  只在该文件用于**重装新机**（nixos-infect 就地安装）时才需要放开。原因：NixOS 26.05 起该选项
+  默认为 true，而 nixos-infect 依赖的 `NIXOS_LUSTRATE`（首次启动把旧 Ubuntu 整体挪到
+  `/old-root`）只在 bash 版 stage-1 的 `lustrateRoot` 里实现，systemd-initrd 没有这段逻辑；
+  首次启动不关就会单元泄漏、网络起不来 → 装完失联（Lightsail 与 EC2 一致，已在 EC2 串口实锤）。
+  已装好的机器不受影响：lustrate 只发生一次（新根上已无 `/etc/NIXOS_LUSTRATE`，清单在
+  `/old-root/`），故日常重建用默认 systemd-initrd 即可，也免掉 26.11 移除脚本式 initrd 的警告。
+  nixos-infect 的 `PROVIDER=lightsail` 预设未处理此点，故自带 `bootstrap.nix`。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，
   会被本机 nightly `nix.gc`（`--delete-older-than 3d`）回收，导致每次重建 aliyun 又把
   只属于它的包（如 `operit2-cli`）重编。做法：在本机保留一个 root：

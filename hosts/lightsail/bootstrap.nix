@@ -27,14 +27,18 @@
   };
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
-  # 【关键】必须关闭 systemd-initrd！
-  # NixOS 26.05 起 boot.initrd.systemd.enable 默认为 true，而 nixos-infect 依赖的
-  # NIXOS_LUSTRATE（首次启动把旧系统整体挪到 /old-root）只在【bash 版 stage-1】
-  # （stage-1-init.sh 的 lustrateRoot）里实现，systemd-initrd 完全没有这段逻辑。
-  # 若不关闭，首次启动不会挪走旧 Ubuntu 的 /etc、/usr，导致 Ubuntu 的 systemd
-  # 单元（systemd-networkd/resolved/dbus 等）泄漏进来、网络起不来——这正是
-  # Lightsail/EC2 上"装完重启即失联"的真因（已在 EC2 串口日志中确认）。
-  boot.initrd.systemd.enable = false;
+  # 【仅就地安装时需要放开】关闭 systemd-initrd，让 nixos-infect 的 lustrate 生效：
+  # NixOS 26.05 起 boot.initrd.systemd.enable 默认为 true，而 NIXOS_LUSTRATE
+  # （首次启动把旧系统整体挪到 /old-root）只在【bash 版 stage-1】（stage-1-init.sh
+  # 的 lustrateRoot）里实现，systemd-initrd 完全没有这段逻辑。首次启动若没关，
+  # 旧 Ubuntu 的 /etc、/usr 不会被挪走，其 systemd 单元（systemd-networkd/resolved/
+  # dbus 等）会泄漏进来、网络起不来——即"装完重启就失联"（已在 EC2 串口日志实锤）。
+  #
+  # 但 lustrate 只发生一次：本机装好后新根上已无 /etc/NIXOS_LUSTRATE（清单归档在
+  # /old-root/），不会再跑。故这里默认注释掉，日常用系统默认的 systemd-initrd
+  # （顺带免掉 26.11 移除脚本式 initrd 的弃用警告）。
+  # ⚠️ 若要用本文件【重装新机】（nixos-infect 就地安装），务必先把下面这行放开：
+  # boot.initrd.systemd.enable = false;
 
   # 磁盘按 UUID 引用（nixos-infect 会把根分区 relabel 成 nixos，UUID 不变）
   fileSystems."/" = {
