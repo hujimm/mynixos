@@ -23,7 +23,7 @@ in
     config = {
       # ⚠️ 首次注册账号时临时改成 true 部署一次，注册完立即改回 false 再部署。
       # 不要通过 /admin 页面切换：那会写进 config.json 并永久覆盖此处设置。
-      SIGNUPS_ALLOWED = true;
+      SIGNUPS_ALLOWED = false;
       # 不显示"密码提示"，减少信息泄露面。
       SHOW_PASSWORD_HINT = false;
       # 可选（暂不启用）：
