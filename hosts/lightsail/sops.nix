@@ -2,8 +2,8 @@
 #
 # 与 aliyun 一致：age 私钥不从文件读取，而是由 SSH host key 派生
 # （sops-nix 内部调用 ssh-to-age）。因此本机的 age 公钥已列为
-# modules/nixos/security/.sops.yaml 里 secrets/vaultwarden.yaml 与
-# secrets/hindsight.yaml 的收件人。
+# modules/nixos/security/.sops.yaml 里 secrets/vaultwarden.yaml、
+# secrets/hindsight.yaml 与 secrets/hermes.yaml 的收件人。
 #
 # 取公钥（在 lightsail 上）：
 #   nix shell nixpkgs#ssh-to-age -c ssh-to-age -i /etc/ssh/ssh_host_ed25519_key.pub
@@ -13,6 +13,8 @@ let
   # Hindsight 的密钥单独一个加密文件（LLM/embedding/reranker 的 API key、自设的
   # API key 与 CP 访问口令、DB 密码）。
   hindsightSops = ../../modules/nixos/security/secrets/hindsight.yaml;
+  # hermes 网关的密钥（Telegram bot token、opencode-go / Tavily / GitHub key）。
+  hermesSops = ../../modules/nixos/security/secrets/hermes.yaml;
 in
 {
   imports = [ inputs.sops-nix.nixosModules.sops ];
@@ -64,6 +66,26 @@ in
         POSTGRES_USER=hindsight
         POSTGRES_DB=hindsight_db
         POSTGRES_PASSWORD=${config.sops.placeholder."hindsight-db-password"}
+      '';
+      mode = "0400";
+    };
+
+    # ---- hermes 网关（占位：值由你用 sops 填，见 secrets/hermes.yaml）----
+    # 单 key 文件（secrets/hermes.yaml），故逐条显式指定 sopsFile。
+    secrets."hermes-telegram-bot-token".sopsFile = hermesSops;
+    secrets."hermes-opencode-go-api-key".sopsFile = hermesSops;
+    secrets."hermes-tavily-api-key".sopsFile = hermesSops;
+    secrets."hermes-github-token".sopsFile = hermesSops;
+
+    # hermes 的 $HERMES_HOME/.env：本文件密钥 + 复用 hindsight 的 tenant key。
+    # 明文只在激活期从 /run/secrets 产生，不落 world-readable 的 nix store。
+    templates."hermes-env" = {
+      content = ''
+        TELEGRAM_BOT_TOKEN=${config.sops.placeholder."hermes-telegram-bot-token"}
+        OPENCODE_GO_API_KEY=${config.sops.placeholder."hermes-opencode-go-api-key"}
+        TAVILY_API_KEY=${config.sops.placeholder."hermes-tavily-api-key"}
+        GITHUB_TOKEN=${config.sops.placeholder."hermes-github-token"}
+        HINDSIGHT_API_KEY=${config.sops.placeholder."hindsight-api-key"}
       '';
       mode = "0400";
     };

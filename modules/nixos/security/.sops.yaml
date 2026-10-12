@@ -26,6 +26,12 @@ creation_rules:
       - age:
           - *orion
           - *lightsail
+  # hermes 网关密钥：桌面可编辑、lightsail 可解密（其它主机均不需要）
+  - path_regex: secrets/hermes\.yaml$
+    key_groups:
+      - age:
+          - *orion
+          - *lightsail
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:

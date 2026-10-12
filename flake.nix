@@ -116,6 +116,12 @@
       url = "github:NousResearch/hermes-agent/v2026.9.21";
     };
 
+    # 服务器网关专用：滚动 main，与桌面钉的 v2026.9.21 解耦
+    # （lightsail 的声明式 hermes 用它，见 hosts/lightsail/hermes.nix）。
+    hermes-agent-main = {
+      url = "github:NousResearch/hermes-agent";
+    };
+
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     deepseek-harness.url = "github:Moraxyc/deepseek-harness.nix";
