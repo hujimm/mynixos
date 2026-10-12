@@ -10,5 +10,6 @@
     ./bootstrap.nix
     ./sops.nix
     ./vaultwarden.nix
+    ./hindsight.nix
   ];
 }
