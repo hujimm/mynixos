@@ -116,10 +116,12 @@
       url = "github:NousResearch/hermes-agent/v2026.9.21";
     };
 
-    # 服务器网关专用：滚动 main，与桌面钉的 v2026.9.21 解耦
+    # 服务器网关专用：钉官方最新 release tag，与桌面钉的 v2026.9.21 解耦
     # （lightsail 的声明式 hermes 用它，见 hosts/lightsail/hermes.nix）。
-    hermes-agent-main = {
-      url = "github:NousResearch/hermes-agent";
+    # 注意 v0.21.5 起内置记忆 provider（含 hindsight）已移出核心，改走插件目录，
+    # 故 lightsail 侧用 entry-point 插件，不再用 extraDependencyGroups。
+    hermes-agent-server = {
+      url = "github:NousResearch/hermes-agent/v0.21.7";
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";

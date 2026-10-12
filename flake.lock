@@ -179,7 +179,7 @@
     "flake-parts_3": {
       "inputs": {
         "nixpkgs-lib": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ]
       },
@@ -281,7 +281,7 @@
         "type": "github"
       }
     },
-    "hermes-agent-main": {
+    "hermes-agent-server": {
       "inputs": {
         "flake-parts": "flake-parts_3",
         "home-manager": "home-manager_2",
@@ -292,15 +292,16 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1791815820,
-        "narHash": "sha256-PpTltWhD5w+2YboxmdjTzRZe32AE3+eOIa6IhLLTyCY=",
+        "lastModified": 1791775030,
+        "narHash": "sha256-iQV83yt6UXPdN/6D/iea79vb5w1BeSlO+8SQYjUEp84=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "7cc3fb8cb55898747dd1dfa56fda3e16ebba028e",
+        "rev": "71d34bad1045610252eda02ee79549436896e784",
         "type": "github"
       },
       "original": {
         "owner": "NousResearch",
+        "ref": "v0.21.7",
         "repo": "hermes-agent",
         "type": "github"
       }
@@ -329,7 +330,7 @@
     "home-manager_2": {
       "inputs": {
         "nixpkgs": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ]
       },
@@ -593,7 +594,7 @@
     "npm-lockfile-fix_2": {
       "inputs": {
         "nixpkgs": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ]
       },
@@ -663,15 +664,15 @@
     "pyproject-build-systems_2": {
       "inputs": {
         "nixpkgs": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ],
         "pyproject-nix": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "pyproject-nix"
         ],
         "uv2nix": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "uv2nix"
         ]
       },
@@ -713,7 +714,7 @@
     "pyproject-nix_2": {
       "inputs": {
         "nixpkgs": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ]
       },
@@ -740,7 +741,7 @@
         "fcitx5-vinput": "fcitx5-vinput",
         "flashfox-lite": "flashfox-lite",
         "hermes-agent": "hermes-agent",
-        "hermes-agent-main": "hermes-agent-main",
+        "hermes-agent-server": "hermes-agent-server",
         "home-manager": "home-manager_3",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_8",
@@ -944,11 +945,11 @@
     "uv2nix_2": {
       "inputs": {
         "nixpkgs": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "nixpkgs"
         ],
         "pyproject-nix": [
-          "hermes-agent-main",
+          "hermes-agent-server",
           "pyproject-nix"
         ]
       },

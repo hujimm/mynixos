@@ -1,14 +1,14 @@
 # lightsail 上的声明式 hermes 网关（native 模式）。
 #
 # 选型（与桌面无关，桌面的 hermes 仍走 inputs.hermes-agent）：
-#   - 输入用独立的 hermes-agent-main（main 滚动），见 flake.nix；
+#   - 输入用独立的 hermes-agent-server（钉最新 release tag v0.21.7），见 flake.nix；
 #   - native 加固 systemd，不起容器（容器模式不能配 backend.mode）；
 #   - 网关本身只做 Telegram；backend 只开 serve 且绑回环，
 #     远程桌面走 SSH 隧道连 127.0.0.1:9119（绑回环 → 无认证门）；
 #   - 记忆接同机 Hindsight 容器：local_external → http://127.0.0.1:8888，
 #     tenant key 复用 sops 的 hindsight-api-key。
 #
-# ⚠️ Hindsight 在 main 上已「去内置化」，且是**目录插件**。但目录插件经
+# ⚠️ Hindsight 自 v0.21.5 起「去内置化」，且是**目录插件**。但目录插件经
 #    extraPlugins 软链后 provider 名 = 目录名（plugins/memory 发现用 child.name，
 #    模块又会加 nix-managed- 前缀），对不上 memory.provider="hindsight"。
 #    故采用社区验证做法（sylvesterroos/dotfiles）：把它重打成 pip 包，暴露
@@ -16,7 +16,7 @@
 #    extraPythonPackages 装载。local_external 只需 hindsight-client。
 #
 # 依赖策略：hindsight-client 的依赖（aiohttp/aiohttp-retry/pydantic/urllib3/
-# yarl/dateutil/typing-extensions）都在 Hermes sealed venv 里（main 的
+# yarl/dateutil/typing-extensions）都在 Hermes sealed venv 里（v0.21.7 的
 # packages.default = full，含 daytona+messaging），故本包**不声明依赖**——
 # 声明会触发 sealed-venv 冲突检查而构建失败。
 #
@@ -26,14 +26,14 @@
 
 let
   # ── Hindsight 插件源码（目录插件 → pip 包）──
-  # catalog pin：plugin-catalog/hindsight.yaml（v1.2.1）。
+  # v0.21.7 的 plugin-catalog/hindsight.yaml 把插件钉在 d56c4acd（v1.2.1）。
   # 用 codeload tarball 的平铺 sha256（可直接算，无需 fakeHash/prefetch）。
   hindsightPluginSrc = pkgs.stdenvNoCC.mkDerivation {
     pname = "hermes-plugin-hindsight-src";
     version = "1.2.1";
     src = pkgs.fetchurl {
-      url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/eb6df499d35300e5b2f3f029b2e6adda04ed90f8";
-      hash = "sha256-nRvGPdXwHXAMaBk41cE9imZMMMmd1KfWoTF/cb5PTx8=";
+      url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/d56c4acdf59c41957613d399094cdf8c489b060c";
+      hash = "sha256-utu+6lXhRIe/owabJiXUIl+q9i+K2TB6Yt7vTXb2C3s=";
     };
     installPhase = ''
       mkdir -p $out
@@ -91,7 +91,7 @@ let
   };
 in
 {
-  imports = [ inputs.hermes-agent-main.nixosModules.default ];
+  imports = [ inputs.hermes-agent-server.nixosModules.default ];
 
   services.hermes-agent = {
     enable = true;
