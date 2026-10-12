@@ -8,10 +8,88 @@
 #   - 记忆接同机 Hindsight 容器：local_external → http://127.0.0.1:8888，
 #     tenant key 复用 sops 的 hindsight-api-key。
 #
+# ⚠️ Hindsight 在 main 上已「去内置化」，且是**目录插件**。但目录插件经
+#    extraPlugins 软链后 provider 名 = 目录名（plugins/memory 发现用 child.name，
+#    模块又会加 nix-managed- 前缀），对不上 memory.provider="hindsight"。
+#    故采用社区验证做法（sylvesterroos/dotfiles）：把它重打成 pip 包，暴露
+#    entry-point 组 hermes_agent.memory_providers 的 "hindsight"，用
+#    extraPythonPackages 装载。local_external 只需 hindsight-client。
+#
+# 依赖策略：hindsight-client 的依赖（aiohttp/aiohttp-retry/pydantic/urllib3/
+# yarl/dateutil/typing-extensions）都在 Hermes sealed venv 里（main 的
+# packages.default = full，含 daytona+messaging），故本包**不声明依赖**——
+# 声明会触发 sealed-venv 冲突检查而构建失败。
+#
 # 密钥（TELEGRAM_BOT_TOKEN / OPENCODE_GO_API_KEY / TAVILY_API_KEY / GITHUB_TOKEN /
 # HINDSIGHT_API_KEY）由 sops 渲染成 $HERMES_HOME/.env，见 ./sops.nix 的 hermes-env 模板。
-{ config, inputs, ... }:
+{ config, inputs, pkgs, ... }:
 
+let
+  # ── Hindsight 插件源码（目录插件 → pip 包）──
+  # catalog pin：plugin-catalog/hindsight.yaml（v1.2.1）。
+  # 用 codeload tarball 的平铺 sha256（可直接算，无需 fakeHash/prefetch）。
+  hindsightPluginSrc = pkgs.stdenvNoCC.mkDerivation {
+    pname = "hermes-plugin-hindsight-src";
+    version = "1.2.1";
+    src = pkgs.fetchurl {
+      url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/eb6df499d35300e5b2f3f029b2e6adda04ed90f8";
+      hash = "sha256-nRvGPdXwHXAMaBk41cE9imZMMMmd1KfWoTF/cb5PTx8=";
+    };
+    installPhase = ''
+      mkdir -p $out
+      cp -r hindsight-integrations/hermes/. $out/
+      rm -rf $out/tests   # 只留运行所需
+    '';
+  };
+
+  py = config.services.hermes-agent.package.python.pkgs;
+
+  # hindsight-client：local_external 唯一需要的库；不声明依赖（见文件头）。
+  hindsight-client = py.buildPythonPackage {
+    pname = "hindsight-client";
+    version = "0.10.3";
+    format = "wheel";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/54/31/5157bd9f73dca7ef2516470ff85818e03d6167f031cfcc96ff1c263ebc12/hindsight_client-0.10.3-py3-none-any.whl";
+      hash = "sha256-tNDRu8KdzU7yWkojoIpIBG1TN7cEva+rsC0AENKZoGg=";
+    };
+    dontCheckRuntimeDeps = true;
+  };
+
+  # 把目录插件重打包为 pip 包，声明 hermes_agent.memory_providers entry point。
+  hermes-plugin-hindsight = py.buildPythonPackage {
+    pname = "hermes-plugin-hindsight";
+    version = "1.2.1";
+    src = hindsightPluginSrc;
+    pyproject = true;
+    postPatch = ''
+      mkdir hermes_hindsight
+      mv *.py plugin.yaml hermes_hindsight/
+      cat > pyproject.toml <<'EOF'
+      [build-system]
+      requires = ["setuptools"]
+      build-backend = "setuptools.build_meta"
+
+      [project]
+      name = "hermes-plugin-hindsight"
+      version = "1.2.1"
+      dependencies = ["hindsight-client"]
+
+      [project.entry-points."hermes_agent.memory_providers"]
+      hindsight = "hermes_hindsight"
+
+      [tool.setuptools]
+      packages = ["hermes_hindsight"]
+      package-data = { hermes_hindsight = ["plugin.yaml"] }
+      EOF
+    '';
+    build-system = [ py.setuptools ];
+    dependencies = [ hindsight-client ];
+    # 导入的是 Hermes 自己的模块，只有 venv 提供；且不做 runtime dep 校验。
+    dontCheckRuntimeDeps = true;
+    dontUsePythonImportsCheck = true;
+  };
+in
 {
   imports = [ inputs.hermes-agent-main.nixosModules.default ];
 
@@ -20,15 +98,13 @@
     # CLI 进系统 PATH 并全局导出 HERMES_HOME，ssh 上去能共享服务状态
     addToSystemPackages = true;
 
-    # 把 hindsight-client 编进 sealed venv（Nix 运行时装不了包）
-    extraDependencyGroups = [ "hindsight" ];
+    # entry-point 记忆插件（会带上 hindsight-client）
+    extraPythonPackages = [ hermes-plugin-hindsight ];
 
     # 密钥：sops 渲染的 env 文件；非机密项放 environment
     environmentFiles = [ config.sops.templates."hermes-env".path ];
     environment = {
       TELEGRAM_ALLOWED_USERS = "8706786498";
-      HINDSIGHT_MODE = "local_external";
-      HINDSIGHT_API_URL = "http://127.0.0.1:8888";
     };
 
     # 给远程桌面连的后端；绑回环 + SSH 隧道，故不触发认证门
@@ -36,6 +112,13 @@
       mode = "serve";
       host = "127.0.0.1";
       port = 9119;
+    };
+
+    # Hindsight 插件自己的配置。优先级高于 env（HINDSIGHT_MODE 只在“无 config.json”
+    # 时才读 env），所以这里显式声明，避免踩优先级坑。
+    hermesHomeFiles."hindsight/config.json" = builtins.toJSON {
+      mode = "local_external";
+      api_url = "http://127.0.0.1:8888";
     };
 
     # 声明式 config.yaml（模块深合并；运行时键不在此列，交给 hermes 自管）
@@ -58,7 +141,13 @@
       security.allow_private_urls = true;
 
       # 外部记忆 provider：接同机自托管 Hindsight
-      memory.provider = "hindsight";
+      plugins.enabled = [ "hindsight" ];
+      memory = {
+        provider = "hindsight";
+        # 官方建议：用 hindsight 时关掉内置 flat-file 记忆，避免模型偏好内置
+        memory_enabled = false;
+        user_profile_enabled = false;
+      };
 
       platforms.telegram = {
         enabled = true;
