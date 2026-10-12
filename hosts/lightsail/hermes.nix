@@ -32,6 +32,9 @@ let
     pname = "hermes-plugin-hindsight-src";
     version = "1.2.1";
     src = pkgs.fetchurl {
+      # 必须给带 .tar.gz 的 name，否则 store 路径无扩展名，unpackPhase 认不出 gzip
+      # （URL 的 basename 是纯 rev）。
+      name = "hindsight-plugin-d56c4acd.tar.gz";
       url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/d56c4acdf59c41957613d399094cdf8c489b060c";
       hash = "sha256-utu+6lXhRIe/owabJiXUIl+q9i+K2TB6Yt7vTXb2C3s=";
     };
