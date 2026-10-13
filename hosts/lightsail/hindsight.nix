@@ -31,7 +31,12 @@ in
       hindsight-db = {
         image = "docker.io/pgvector/pgvector:pg18";
         # postgres 入口脚本会把非选项参数透传给 postgres；按小内存机调参。
-        cmd = [ "-c" "shared_buffers=128MB" "-c" "max_connections=50" ];
+        cmd = [
+          "-c"
+          "shared_buffers=128MB"
+          "-c"
+          "max_connections=50"
+        ];
         environmentFiles = [ config.sops.templates."hindsight-db-env".path ];
         volumes = [ "/var/lib/hindsight/pgdata:/var/lib/postgresql/18/docker" ];
         extraOptions = [
@@ -91,6 +96,9 @@ in
 
           # Control Plane 指向同容器内的 API；其 Bearer token 走 EnvironmentFile。
           HINDSIGHT_CP_DATAPLANE_API_URL = "http://localhost:8888";
+
+          HINDSIGHT_API_CONSOLIDATION_DEDUP_THRESHOLD = "0.9";
+
         };
         # 只绑回环；对外由 nginx 终结 TLS。
         ports = [

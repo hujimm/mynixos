@@ -202,7 +202,7 @@ in
       # 过滤明显不相关的召回：不设的话，问无关问题也会塞满 recall_max_tokens 的
       # “最不坏”记忆。门槛按 reranker 分；本机重排是 NVIDIA 的，刻度按实测校准。
       recall_min_scores = {
-        reranker = 0.25;
+        reranker = 0.45;
       };
     };
 
