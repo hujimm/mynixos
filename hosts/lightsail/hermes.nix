@@ -133,6 +133,10 @@ in
     hermesHomeFiles."hindsight/config.json" = builtins.toJSON {
       mode = "local_external";
       api_url = "http://127.0.0.1:8888";
+      # 存完一条记忆后，后台最多等多久（秒）看它能否被搜到。默认 10；这台机
+      # Hindsight 存得慢，调到 30 以减少“刚聊完却想不起来”的次数（后台等待，
+      # 不影响回复速度）。
+      prefetch_retain_drain_timeout = 30;
     };
 
     # 声明式 config.yaml（模块深合并；运行时键不在此列，交给 hermes 自管）
@@ -148,6 +152,12 @@ in
       agent = {
         max_turns = 150;
         reasoning_effort = "low";
+      };
+
+      # 自动起标题改用 opencode-go 的 glm-5.3-flash（默认走 deepseek-flash 会 400）
+      auxiliary.title_generation = {
+        provider = "opencode-go";
+        model = "glm-5.3-flash";
       };
 
       curator.consolidate = true;
