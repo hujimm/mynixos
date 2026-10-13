@@ -228,6 +228,7 @@ in
           "computer_use"
           "image_gen"
           "connections"
+          "tts"
         ];
       };
 
@@ -246,6 +247,10 @@ in
 
       # 与本地 (~/.hermes/config.yaml) 一致的禁用技能清单
       skills.disabled = [
+        "findmy"
+        "imessage"
+        "apple-reminders"
+        "apple-notes"
         "design-md"
         "manim-video"
         "ascii-video"
