@@ -100,6 +100,20 @@ let
     dontCheckRuntimeDeps = true;
     dontUsePythonImportsCheck = true;
   };
+
+  # 上游模块没有接 restartTriggers：只改 settings/hermesHomeFiles 的重建不会重启
+  # 网关，运行中的进程仍用旧配置。用 NixOS 官方 systemd.restartTriggers 做一个
+  # sentinel，声明内容一变就自动重启两个服务，省去每次手动重启。
+  configSentinel = pkgs.writeText "hermes-lightsail-config-sentinel" (
+    builtins.toJSON {
+      inherit (config.services.hermes-agent)
+        settings
+        hermesHomeFiles
+        environment
+        environmentFiles
+        ;
+    }
+  );
 in
 {
   imports = [ inputs.hermes-agent-server.nixosModules.default ];
@@ -210,4 +224,9 @@ in
       };
     };
   };
+
+  # 声明相关的 settings/hermesHomeFiles/environment 一旦变化，就自动重启网关与后端
+  # （NixOS 官方 systemd.restartTriggers）。
+  systemd.services.hermes-agent.restartTriggers = [ configSentinel ];
+  systemd.services.hermes-backend.restartTriggers = [ configSentinel ];
 }
