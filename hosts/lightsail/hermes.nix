@@ -219,7 +219,11 @@ in
       agent = {
         max_turns = 150;
         reasoning_effort = "low";
-        agent.disabled_toolsets = [
+        execution_guidance = false; # 唯一专给 deepseek 系的
+        tool_use_enforcement = false; # Tool-use enforcement
+        task_completion_guidance = false; # Finishing the job
+        parallel_tool_call_guidance = false; # Parallel tool calls
+        disabled_toolsets = [
           "browser"
           "computer_use"
           "image_gen"
