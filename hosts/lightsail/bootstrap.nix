@@ -111,6 +111,19 @@
     }
   ];
 
+  # 【内存】zswap：给上面的 swapfile 做前端压缩缓存。
+  # 内核要换出一页时先把它压进 RAM（zstd，压缩比通常 2–3:1），池满才真写盘；
+  # 回读是解压而不是磁盘 I/O。和 swapDevices 是配套关系而非二选一——
+  # nixpkgs 的 boot.zswap 模块自带两条断言兜底：必须至少有一个 swapDevices，
+  # 且不能与 zramSwap 同开（双重压缩）。
+  #
+  # maxPoolPercent 是**上限**不是预留：池按需增长，不换页就不占内存，
+  # 故这里只做风险封顶。nixpkgs 默认 25%（本机约 478MB），本机内存紧，压到 20%。
+  boot.zswap = {
+    enable = true;
+    maxPoolPercent = 20;
+  };
+
   environment.systemPackages = with pkgs; [
     git
     vim

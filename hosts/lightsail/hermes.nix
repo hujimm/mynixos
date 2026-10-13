@@ -340,6 +340,15 @@ in
     };
   };
 
+  # 【稳定性】内存见底时按重要性排死亡顺序，别让内核随机挑。
+  # 默认三个单元 OOMScoreAdjust 全是 0，OOM killer 只能按自己的启发式挑进程，
+  # 挑中正在干活的网关就等于丢消息。这里显式表态：
+  #   -500 网关（唯一不能死的；它一死 Telegram 就断了）
+  #   +200 后端（hermes serve，只服务桌面/网页，重启即恢复，客户端自己重连）
+  # 记忆容器的分见 ./hindsight.nix（可降级，排在网关之后死）。
+  systemd.services.hermes-agent.serviceConfig.OOMScoreAdjust = -500;
+  systemd.services.hermes-backend.serviceConfig.OOMScoreAdjust = 200;
+
   # 声明相关的 settings/hermesHomeFiles/environment 一旦变化，就自动重启网关与后端
   # （NixOS 官方 systemd.restartTriggers）。
   systemd.services.hermes-agent.restartTriggers = [ configSentinel ];

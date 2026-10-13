@@ -42,6 +42,9 @@ in
         extraOptions = [
           # 上限而非预留：实测个人规模常驻 ~150–250MB。
           "--memory=512m"
+          # 【稳定性】OOM 排序：比应用容器晚死（它一死记忆服务就废了），但早于 hermes。
+          # 走 --oom-score-adj 的理由同应用容器。
+          "--oom-score-adj=400"
           "--health-cmd=pg_isready -U hindsight -d hindsight_db"
           "--health-interval=15s"
           "--health-timeout=5s"
@@ -110,6 +113,11 @@ in
         extraOptions = [
           # 上限而非预留：实测 API+CP 常驻 ~500–750MB。
           "--memory=1024m"
+          # 【稳定性】OOM 排序：内存见底时它最先死（分最高），可自动重启、可降级。
+          # 必须走 podman 的 --oom-score-adj 而不是 unit 的 OOMScoreAdjust——
+          # 容器进程跑在独立的 machine.slice/libpod-*.scope 里，不在 podman-<name>.service
+          # 的 cgroup 下，unit 上设的分传不到它。
+          "--oom-score-adj=600"
           # 优雅停机：给 API/CP 及 DB 连接收尾的时间（官方脚本建议 ≥30s）。
           "--stop-timeout=30"
           "--security-opt=no-new-privileges"
