@@ -12,19 +12,28 @@
 #    extraPlugins 软链后 provider 名 = 目录名（plugins/memory 发现用 child.name，
 #    模块又会加 nix-managed- 前缀），对不上 memory.provider="hindsight"。
 #    故采用社区验证做法（sylvesterroos/dotfiles）：把它重打成 pip 包，暴露
-#    entry-point 组 hermes_agent.memory_providers 的 "hindsight"，用
-#    extraPythonPackages 装载。local_external 只需 hindsight-client。
+#    entry-point 组 hermes_agent.memory_providers 的 "hindsight"。local_external
+#    只需 hindsight-client。
 #
-# 依赖策略：hindsight-client 的依赖（aiohttp/aiohttp-retry/pydantic/urllib3/
-# yarl/dateutil/typing-extensions）都在 Hermes sealed venv 里（v0.21.7 的
-# packages.default = full，含 daytona+messaging），故本包**不声明依赖**——
-# 声明会触发 sealed-venv 冲突检查而构建失败。
+# ⚠️ 插件不能用模块的 `extraPythonPackages` 注入！见 moduleCommon.nix:679 的
+#    effectivePackage：一旦 extraPythonPackages/extraDependencyGroups 任一非空，
+#    就会 `cfg.package.override { extraDependencyGroups = cfg....; }`，把 flake
+#    default（=full，含 messaging/daytona…）的 extras 覆盖成 [] → Telegram 适配器
+#    因缺 python-telegram-bot 起不来、hindsight-client 运行时缺 aiohttp。故这里
+#    直接 override `package` 本身，在 full 之上叠加插件，模块级那两个选项留空。
 #
 # 密钥（TELEGRAM_BOT_TOKEN / OPENCODE_GO_API_KEY / TAVILY_API_KEY / GITHUB_TOKEN /
 # HINDSIGHT_API_KEY）由 sops 渲染成 $HERMES_HOME/.env，见 ./sops.nix 的 hermes-env 模板。
 { config, inputs, pkgs, ... }:
 
 let
+  system = pkgs.stdenv.hostPlatform.system;
+
+  # flake 的 default 包 = full（含 messaging/daytona 等 extras）。用它做基准，
+  # 也用它自带的解释器构建插件（避免与 config.services.hermes-agent.package 递归）。
+  hermesBase = inputs.hermes-agent-server.packages.${system}.default;
+  py = hermesBase.python.pkgs;
+
   # ── Hindsight 插件源码（目录插件 → pip 包）──
   # v0.21.7 的 plugin-catalog/hindsight.yaml 把插件钉在 d56c4acd（v1.2.1）。
   # 用 codeload tarball 的平铺 sha256（可直接算，无需 fakeHash/prefetch）。
@@ -32,8 +41,7 @@ let
     pname = "hermes-plugin-hindsight-src";
     version = "1.2.1";
     src = pkgs.fetchurl {
-      # 必须给带 .tar.gz 的 name，否则 store 路径无扩展名，unpackPhase 认不出 gzip
-      # （URL 的 basename 是纯 rev）。
+      # 必须给带 .tar.gz 的 name，否则 store 路径无扩展名，unpackPhase 认不出 gzip。
       name = "hindsight-plugin-d56c4acd.tar.gz";
       url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/d56c4acdf59c41957613d399094cdf8c489b060c";
       hash = "sha256-utu+6lXhRIe/owabJiXUIl+q9i+K2TB6Yt7vTXb2C3s=";
@@ -45,9 +53,9 @@ let
     '';
   };
 
-  py = config.services.hermes-agent.package.python.pkgs;
-
-  # hindsight-client：local_external 唯一需要的库；不声明依赖（见文件头）。
+  # hindsight-client：local_external 唯一需要的库。它的依赖（aiohttp/aiohttp-retry/
+  # pydantic/urllib3/yarl/dateutil/typing-extensions）都在 full 的 sealed venv 里，
+  # 故本包**不声明依赖**——声明会触发 sealed-venv 冲突检查而构建失败。
   hindsight-client = py.buildPythonPackage {
     pname = "hindsight-client";
     version = "0.10.3";
@@ -101,8 +109,11 @@ in
     # CLI 进系统 PATH 并全局导出 HERMES_HOME，ssh 上去能共享服务状态
     addToSystemPackages = true;
 
-    # entry-point 记忆插件（会带上 hindsight-client）
-    extraPythonPackages = [ hermes-plugin-hindsight ];
+    # 在 full 之上叠加 hindsight 插件（保留 messaging/daytona 等 extras）。
+    # 不要改用模块的 extraPythonPackages——那会覆盖掉 full 的 extras（见文件头）。
+    package = hermesBase.override {
+      extraPythonPackages = [ hermes-plugin-hindsight ];
+    };
 
     # 密钥：sops 渲染的 env 文件；非机密项放 environment
     environmentFiles = [ config.sops.templates."hermes-env".path ];
