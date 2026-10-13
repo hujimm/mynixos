@@ -24,7 +24,12 @@
 #
 # 密钥（TELEGRAM_BOT_TOKEN / OPENCODE_GO_API_KEY / TAVILY_API_KEY / GITHUB_TOKEN /
 # HINDSIGHT_API_KEY）由 sops 渲染成 $HERMES_HOME/.env，见 ./sops.nix 的 hermes-env 模板。
-{ config, inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
@@ -164,7 +169,9 @@ in
 
       # 过滤明显不相关的召回：不设的话，问无关问题也会塞满 recall_max_tokens 的
       # “最不坏”记忆。门槛按 reranker 分；本机重排是 NVIDIA 的，刻度按实测校准。
-      recall_min_scores = { reranker = 0.25; };
+      recall_min_scores = {
+        reranker = 0.25;
+      };
     };
 
     # 声明式 config.yaml（模块深合并；运行时键不在此列，交给 hermes 自管）
@@ -195,6 +202,30 @@ in
 
       # 与本地 (~/.hermes/config.yaml) 一致的禁用技能清单
       skills.disabled = [
+        "design-md"
+        "manim-video"
+        "ascii-video"
+        "p5js"
+        "popular-web-designs"
+        "baoyu-infographic"
+        "architecture-diagram"
+        "airtable"
+        "competitor-news-monitor"
+        "grounded-citations"
+        "systematic-debugging"
+        "test-driven-development"
+        "spike"
+        "codebase-inspection"
+        "dogfood"
+        "inspecting-hermes-desktop-dom"
+        "blocked-page-recovery"
+        "requesting-code-review"
+        "arxiv"
+        "xurl"
+        "computer-use"
+        "humanizer"
+        "obsidian"
+        "llm-wiki"
         "box"
         "claude-code"
         "claude-design"
@@ -236,6 +267,14 @@ in
         status_online = "🟢 Online";
         status_offline = "🔴 Offline";
       };
+
+      # Copilot 本机不用，但 .env 里那个 ghp_ 令牌会被 Copilot 探测认成“有凭证”，
+      # 每次模型目录轮询就打一条 copilot_auth 警告。排除检查在凭证探测之前，
+      # 排除后警告消失；令牌本身留着给 GitHub 技能用。
+      model_catalog.excluded_providers = [
+        "copilot"
+        "copilot-acp"
+      ];
     };
   };
 
