@@ -86,6 +86,8 @@ in
           HINDSIGHT_API_WORKER_ID = "hindsight-lightsail";
           HINDSIGHT_API_HOST = "0.0.0.0";
           HINDSIGHT_API_LOG_LEVEL = "info";
+          # 后台操作记录保留 30 天（默认 0=永久），防数据库长期膨胀。
+          HINDSIGHT_API_OPERATION_RETENTION_DAYS = "30";
 
           # Control Plane 指向同容器内的 API；其 Bearer token 走 EnvironmentFile。
           HINDSIGHT_CP_DATAPLANE_API_URL = "http://localhost:8888";

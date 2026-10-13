@@ -151,6 +151,20 @@ in
       # Hindsight 存得慢，调到 30 以减少“刚聊完却想不起来”的次数（后台等待，
       # 不影响回复速度）。
       prefetch_retain_drain_timeout = 30;
+
+      # 【治跨会话重复】Hindsight 默认「按标签分桶」写结论，而本插件会给每条记录
+      # 自动贴 session:<id> 标签，于是同一件事在不同会话各生成一条结论（实测三个
+      # 会话各 84/74/66 条）。shared = 写结论时忽略会话标签、全局合并；会话标签
+      # 仍留在原始记录上，供按会话检索。
+      observation_scopes = "shared";
+
+      # 攒够 3 轮（用户一句 + agent 一句 = 1 轮）打包存一次，减少原料与 LLM 调用。
+      # 1 = 每轮立刻存（上游默认）。会话结束时未攒满的会补发，不会丢。
+      retain_every_n_turns = 3;
+
+      # 过滤明显不相关的召回：不设的话，问无关问题也会塞满 recall_max_tokens 的
+      # “最不坏”记忆。门槛按 reranker 分；本机重排是 NVIDIA 的，刻度按实测校准。
+      recall_min_scores = { reranker = 0.25; };
     };
 
     # 声明式 config.yaml（模块深合并；运行时键不在此列，交给 hermes 自管）
