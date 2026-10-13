@@ -190,13 +190,21 @@ in
       agent = {
         max_turns = 150;
         reasoning_effort = "low";
-        disabled_toolsets = [ "browser" ];
+        agent.disabled_toolsets = [
+          "browser"
+          "computer_use"
+          "image_gen"
+          "connections"
+        ];
       };
 
       # 自动起标题改用 opencode-go 的 glm-5.3-flash（默认走 deepseek-flash 会 400）
-      auxiliary.title_generation = {
-        provider = "opencode-go";
-        model = "glm-5.3-flash";
+      auxiliary = {
+        title_generation = {
+          provider = "opencode-go";
+          model = "glm-5.3-flash";
+        };
+        background_review.enabled = false;
       };
 
       curator.consolidate = true;
