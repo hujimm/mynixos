@@ -106,6 +106,32 @@ let
     dontUsePythonImportsCheck = true;
   };
 
+  # 主机通用命令行工具：既装进系统 PATH（ssh/运维/其它服务都能用），也交给
+  # hermes 服务。systemd 服务的 PATH 是模块显式构造的（不含系统 profile），
+  # 所以必须同时进 extraPackages，agent 才看得到这些命令。
+  # 其中 python3 是桌面端 Desktop SSH 探针需要的（它经 SSH 执行 `python3 -`）。
+  commonTools = with pkgs; [
+    python3
+    gh # GitHub CLI，自动读环境里的 GITHUB_TOKEN/GH_TOKEN
+    git
+    ripgrep # rg
+    fd
+    ffmpeg
+    nodejs # 含 node 与 npm
+    jq
+    yq-go
+    curl
+    wget
+    unzip
+    zip
+    gnutar
+    gzip
+    tree
+    which
+    openssl
+    sqlite
+  ];
+
   # 上游模块没有接 restartTriggers：只改 settings/hermesHomeFiles 的重建不会重启
   # 网关，运行中的进程仍用旧配置。用 NixOS 官方 systemd.restartTriggers 做一个
   # sentinel，声明内容一变就自动重启两个服务，省去每次手动重启。
@@ -133,6 +159,9 @@ in
     package = hermesBase.override {
       extraPythonPackages = [ hermes-plugin-hindsight ];
     };
+
+    # agent 的 PATH（服务级）。见文件头 commonTools 的说明。
+    extraPackages = commonTools;
 
     # 密钥：sops 渲染的 env 文件；非机密项放 environment
     environmentFiles = [ config.sops.templates."hermes-env".path ];
@@ -312,9 +341,7 @@ in
     };
   };
 
-  # 桌面端 Hermes Desktop 的 “SSH 连接” 会经 SSH 在远程执行 `python3 - <marker>`
-  # 做“更新是否进行中”的探针；NixOS 默认没有系统级 python3，缺它会报
-  # “Could not prove that the remote Hermes install is clear for SSH startup.”
-  # 装上后桌面端即可正常经 SSH 连接（它会另起随机端口的 isolated serve）。
-  environment.systemPackages = [ pkgs.python3 ];
+  # 通用命令行工具装到系统全局（ssh/运维/其它服务可用）；同一份列表也给了
+  # hermes 服务。python3 是桌面端 Desktop SSH 探针所需，见文件头 commonTools。
+  environment.systemPackages = commonTools;
 }
