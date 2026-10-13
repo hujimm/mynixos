@@ -243,4 +243,10 @@ in
   # （NixOS 官方 systemd.restartTriggers）。
   systemd.services.hermes-agent.restartTriggers = [ configSentinel ];
   systemd.services.hermes-backend.restartTriggers = [ configSentinel ];
+
+  # 桌面端 Hermes Desktop 的 “SSH 连接” 会经 SSH 在远程执行 `python3 - <marker>`
+  # 做“更新是否进行中”的探针；NixOS 默认没有系统级 python3，缺它会报
+  # “Could not prove that the remote Hermes install is clear for SSH startup.”
+  # 装上后桌面端即可正常经 SSH 连接（它会另起随机端口的 isolated serve）。
+  environment.systemPackages = [ pkgs.python3 ];
 }
