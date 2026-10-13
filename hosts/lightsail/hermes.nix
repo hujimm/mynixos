@@ -3,8 +3,9 @@
 # 选型（与桌面无关，桌面的 hermes 仍走 inputs.hermes-agent）：
 #   - 输入用独立的 hermes-agent-server（钉最新 release tag v0.21.7），见 flake.nix；
 #   - native 加固 systemd，不起容器（容器模式不能配 backend.mode）；
-#   - 网关本身只做 Telegram；backend 只开 serve 且绑回环，
-#     远程桌面走 SSH 隧道连 127.0.0.1:9119（绑回环 → 无认证门）；
+#   - 网关本身只做 Telegram；backend 只开 serve，绑 0.0.0.0 以便 nginx 用域名
+#     反代（非回环即触发登录门认证），9119 不对公网开放（防火墙只放 80/443）；
+#     不想经 nginx 时也可走 SSH 隧道连 127.0.0.1:9119；
 #   - 记忆接同机 Hindsight 容器：local_external → http://127.0.0.1:8888，
 #     tenant key 复用 sops 的 hindsight-api-key。
 #
@@ -40,16 +41,22 @@ let
   py = hermesBase.python.pkgs;
 
   # ── Hindsight 插件源码（目录插件 → pip 包）──
-  # v0.21.7 的 plugin-catalog/hindsight.yaml 把插件钉在 d56c4acd（v1.2.1）。
+  # 版本跟着 v0.21.7 的 plugin-catalog/hindsight.yaml 走：用它当前钉的
+  # f843f173（v1.2.2），而不是更旧的 d56c4acd（v1.2.1）——1.2.1 有两个缺口：
+  #   - 1.2.2 才把 "shared" 加进 observation_scopes 的合法值（1.2.1 会静默丢弃）；
+  #   - 1.2.2 才有 recall_min_scores（1.2.1 里没这个键）。
   # 用 codeload tarball 的平铺 sha256（可直接算，无需 fakeHash/prefetch）。
+  # ⚠️ 算哈希要用 https://codeload.github.com/.../tar.gz/<sha> 这个地址；用
+  #    `gh api repos/.../tarball/<sha>` 取到的字节不一样（会带打包元数据差异），
+  #    算出来的哈希对不上，fetchurl 会失败。
   hindsightPluginSrc = pkgs.stdenvNoCC.mkDerivation {
     pname = "hermes-plugin-hindsight-src";
-    version = "1.2.1";
+    version = "1.2.2";
     src = pkgs.fetchurl {
       # 必须给带 .tar.gz 的 name，否则 store 路径无扩展名，unpackPhase 认不出 gzip。
-      name = "hindsight-plugin-d56c4acd.tar.gz";
-      url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/d56c4acdf59c41957613d399094cdf8c489b060c";
-      hash = "sha256-utu+6lXhRIe/owabJiXUIl+q9i+K2TB6Yt7vTXb2C3s=";
+      name = "hindsight-plugin-f843f173.tar.gz";
+      url = "https://codeload.github.com/vectorize-io/hindsight/tar.gz/f843f173bb41f001e322cc83c917371639e47fbf";
+      hash = "sha256-e4KPX3ELUnacvOcNdo63EgYobJph4OrqKGsLda4QqgU=";
     };
     installPhase = ''
       mkdir -p $out
@@ -75,7 +82,7 @@ let
   # 把目录插件重打包为 pip 包，声明 hermes_agent.memory_providers entry point。
   hermes-plugin-hindsight = py.buildPythonPackage {
     pname = "hermes-plugin-hindsight";
-    version = "1.2.1";
+    version = "1.2.2";
     src = hindsightPluginSrc;
     pyproject = true;
     postPatch = ''
@@ -88,7 +95,7 @@ let
 
       [project]
       name = "hermes-plugin-hindsight"
-      version = "1.2.1"
+      version = "1.2.2"
       dependencies = ["hindsight-client"]
 
       [project.entry-points."hermes_agent.memory_providers"]
@@ -112,7 +119,11 @@ let
   # 其中 python3 是桌面端 Desktop SSH 探针需要的（它经 SSH 执行 `python3 -`）。
   commonTools = with pkgs; [
     python3
-    gh # GitHub CLI，自动读环境里的 GITHUB_TOKEN/GH_TOKEN
+    # GitHub CLI。注意凭证不在环境变量里：sops 的 key 只写进 $HERMES_HOME/.env，
+    # 不进工具子进程的 env（实测子进程里连 OPENCODE_GO_API_KEY 都没有），所以 gh
+    # 靠的是 ~/.config/gh/hosts.yml 里那份已固化的登录（本机执行过一次
+    # `gh auth login --with-token`，该文件不入仓库）。
+    gh
     git
     ripgrep # rg
     fd
@@ -190,9 +201,10 @@ in
       prefetch_retain_drain_timeout = 30;
 
       # 【治跨会话重复】Hindsight 默认「按标签分桶」写结论，而本插件会给每条记录
-      # 自动贴 session:<id> 标签，于是同一件事在不同会话各生成一条结论（实测三个
-      # 会话各 84/74/66 条）。shared = 写结论时忽略会话标签、全局合并；会话标签
-      # 仍留在原始记录上，供按会话检索。
+      # 自动贴 session:<id> 标签，于是同一件事在不同会话各生成一条结论（实测
+      # /observations/scopes 里 12 个 scope 全是 session:xxx，各几十条）。
+      # shared = 写结论时忽略会话标签、全局合并；会话标签仍留在原始记录上，
+      # 供按会话检索。需要插件 ≥1.2.2 才会被认（1.2.1 静默丢弃，见文件头）。
       observation_scopes = "shared";
 
       # 攒够 3 轮（用户一句 + agent 一句 = 1 轮）打包存一次，减少原料与 LLM 调用。
@@ -201,6 +213,7 @@ in
 
       # 过滤明显不相关的召回：不设的话，问无关问题也会塞满 recall_max_tokens 的
       # “最不坏”记忆。门槛按 reranker 分；本机重排是 NVIDIA 的，刻度按实测校准。
+      # 同样需要插件 ≥1.2.2（1.2.1 里没有这个键，写了不生效）。
       recall_min_scores = {
         reranker = 0.45;
       };

@@ -97,8 +97,10 @@ in
           # Control Plane 指向同容器内的 API；其 Bearer token 走 EnvironmentFile。
           HINDSIGHT_CP_DATAPLANE_API_URL = "http://localhost:8888";
 
+          # 近义结论的合并门槛（默认 0.97，越接近 1 越保守）：同一 tag scope 内
+          # 两条结论的向量相似度到这个值，才会拿去判断「合并还是各自保留」。
+          # 0.97 太严：中文原句与英文摘要这类重复根本进不了比较，因此降到 0.9。
           HINDSIGHT_API_CONSOLIDATION_DEDUP_THRESHOLD = "0.9";
-
         };
         # 只绑回环；对外由 nginx 终结 TLS。
         ports = [
