@@ -152,6 +152,7 @@ in
       agent = {
         max_turns = 150;
         reasoning_effort = "low";
+        disabled_toolsets = [ "browser" ];
       };
 
       # 自动起标题改用 opencode-go 的 glm-5.3-flash（默认走 deepseek-flash 会 400）
@@ -163,6 +164,24 @@ in
       curator.consolidate = true;
       approvals.destructive_slash_confirm = false;
       security.allow_private_urls = true;
+
+      # 与本地 (~/.hermes/config.yaml) 一致的禁用技能清单
+      skills.disabled = [
+        "box"
+        "claude-code"
+        "claude-design"
+        "codex"
+        "email-inbox-triage"
+        "gif-search"
+        "google-workspace"
+        "himalaya"
+        "notion"
+        "opencode"
+        "simplify-code"
+        "songsee"
+        "songwriting-and-ai-music"
+        "teams-meeting-pipeline"
+      ];
 
       # 外部记忆 provider：接同机自托管 Hindsight
       plugins.enabled = [ "hindsight" ];
