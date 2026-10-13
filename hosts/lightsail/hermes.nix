@@ -138,12 +138,15 @@ in
     environmentFiles = [ config.sops.templates."hermes-env".path ];
     environment = {
       TELEGRAM_ALLOWED_USERS = "8706786498";
+      # 公网反代后的登录门用户名（非机密）；密码与签名密钥走 sops（见 ./sops.nix）。
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME = "orion";
     };
 
-    # 给远程桌面连的后端；绑回环 + SSH 隧道，故不触发认证门
+    # 给远程桌面/浏览器连的后端。绑 0.0.0.0 让 nginx 可用域名反代，并触发出
+    # 登录门（认证）。9119 不对外开放（防火墙只放 80/443，nginx 走回环访问它）。
     backend = {
       mode = "serve";
-      host = "127.0.0.1";
+      host = "0.0.0.0";
       port = 9119;
     };
 
@@ -282,6 +285,24 @@ in
   # （NixOS 官方 systemd.restartTriggers）。
   systemd.services.hermes-agent.restartTriggers = [ configSentinel ];
   systemd.services.hermes-backend.restartTriggers = [ configSentinel ];
+
+  # ── 公网入口：nginx + Let's Encrypt 反代本机后端 9119 ──
+  # 复用 vaultwarden.nix/hindsight.nix 的 security.acme.defaults.email 与全局 TLS 参数。
+  # 后端已绑 0.0.0.0 且启用登录门；9119 本身不对外（防火墙只放 80/443，nginx 走回环）。
+  services.nginx.virtualHosts."xixi.liyinuo.tech" = {
+    enableACME = true;
+    forceSSL = true;
+    extraConfig = "client_max_body_size 128M;";
+    locations."/" = {
+      proxyPass = "http://127.0.0.1:9119";
+      proxyWebsockets = true;
+      extraConfig = ''
+        # /api/ws、/api/pty 是长连接，超时要放宽
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+      '';
+    };
+  };
 
   # 桌面端 Hermes Desktop 的 “SSH 连接” 会经 SSH 在远程执行 `python3 - <marker>`
   # 做“更新是否进行中”的探针；NixOS 默认没有系统级 python3，缺它会报

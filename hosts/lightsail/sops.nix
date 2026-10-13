@@ -76,6 +76,9 @@ in
     secrets."hermes-opencode-go-api-key".sopsFile = hermesSops;
     secrets."hermes-tavily-api-key".sopsFile = hermesSops;
     secrets."hermes-github-token".sopsFile = hermesSops;
+    # 公网反代后的 dashboard 登录门：密码 + 稳定签名密钥（否则每次重启掉登录）
+    secrets."hermes-dashboard-password".sopsFile = hermesSops;
+    secrets."hermes-dashboard-secret".sopsFile = hermesSops;
 
     # hermes 的 $HERMES_HOME/.env：本文件密钥 + 复用 hindsight 的 tenant key。
     # 明文只在激活期从 /run/secrets 产生，不落 world-readable 的 nix store。
@@ -86,6 +89,8 @@ in
         TAVILY_API_KEY=${config.sops.placeholder."hermes-tavily-api-key"}
         GITHUB_TOKEN=${config.sops.placeholder."hermes-github-token"}
         HINDSIGHT_API_KEY=${config.sops.placeholder."hindsight-api-key"}
+        HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${config.sops.placeholder."hermes-dashboard-password"}
+        HERMES_DASHBOARD_BASIC_AUTH_SECRET=${config.sops.placeholder."hermes-dashboard-secret"}
       '';
       mode = "0400";
     };
