@@ -117,11 +117,13 @@
   # nixpkgs 的 boot.zswap 模块自带两条断言兜底：必须至少有一个 swapDevices，
   # 且不能与 zramSwap 同开（双重压缩）。
   #
-  # maxPoolPercent 是**上限**不是预留：池按需增长，不换页就不占内存，
-  # 故这里只做风险封顶。nixpkgs 默认 25%（本机约 478MB），本机内存紧，压到 20%。
+  # maxPoolPercent 是**上限**不是预留：池按需增长，不换页就不占内存。
+  # nixpkgs 文档的参考是「服务器 10–20%、低内存机 30–50%」；本机 1.9GiB 属
+  # 低内存，取 30%（约 570MB 上限），让更多换出页以压缩态留在 RAM、少写盘；
+  # 池满或内存吃紧时由 shrinker（默认开启）回收。
   boot.zswap = {
     enable = true;
-    maxPoolPercent = 20;
+    maxPoolPercent = 30;
   };
 
   environment.systemPackages = with pkgs; [
