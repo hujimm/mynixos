@@ -1,7 +1,7 @@
 # lightsail 上的声明式 hermes 网关（native 模式）。
 #
-# 选型（与桌面无关，桌面的 hermes 仍走 inputs.hermes-agent）：
-#   - 输入用独立的 hermes-agent-server（钉最新 release tag v0.21.7），见 flake.nix；
+# 选型（与桌面共用一个输入 inputs.hermes-agent，见 flake.nix）：
+#   - 输入钉官方最新 release tag v0.22.0，桌面与 lightsail 不再分两条；
 #   - native 加固 systemd，不起容器（容器模式不能配 backend.mode）；
 #   - 网关本身只做 Telegram；backend 只开 serve，绑 0.0.0.0 以便 nginx 用域名
 #     反代（非回环即触发登录门认证），9119 不对公网开放（防火墙只放 80/443）；
@@ -37,7 +37,7 @@ let
 
   # flake 的 default 包 = full（含 messaging/daytona 等 extras）。用它做基准，
   # 也用它自带的解释器构建插件（避免与 config.services.hermes-agent.package 递归）。
-  hermesBase = inputs.hermes-agent-server.packages.${system}.default;
+  hermesBase = inputs.hermes-agent.packages.${system}.default;
   py = hermesBase.python.pkgs;
 
   # ── Hindsight 插件源码（目录插件 → pip 包）──
@@ -158,7 +158,7 @@ let
   );
 in
 {
-  imports = [ inputs.hermes-agent-server.nixosModules.default ];
+  imports = [ inputs.hermes-agent.nixosModules.default ];
 
   services.hermes-agent = {
     enable = true;

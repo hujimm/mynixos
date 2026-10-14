@@ -108,20 +108,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hermes-agent = {
-      # 钉到官方 release tag：v2026.9.21 = v0.21.4（2026-09-21 发布，滚动汇总版，
-      # 含 state.db/profile 隔离等一批修复；v2026.9.14 = v0.21.3 的远程 gateway 登录
-      # 与 state.db 写句柄泄漏修复也包含在内）。
-      # 好处：只吃官方发布，不吃 main 上未发布的提交。
-      url = "github:NousResearch/hermes-agent/v2026.9.21";
-    };
-
-    # 服务器网关专用：钉官方最新 release tag，与桌面钉的 v2026.9.21 解耦
-    # （lightsail 的声明式 hermes 用它，见 hosts/lightsail/hermes.nix）。
+    # Hermes Agent（桌面与 lightsail 网关共用这一条输入）。
+    # 原先拆成 hermes-agent（桌面，钉 v2026.9.21）与 hermes-agent-server（lightsail，
+    # 钉 v0.21.7）两条，各自漂移；现合并为一条，统一钉官方最新 release tag
+    # v0.22.0（2026-10-14 发布，含 v2026.9.21 之后的全部发布）。
+    # 好处：只吃官方发布，不吃 main 上未发布的提交。
     # 注意 v0.21.5 起内置记忆 provider（含 hindsight）已移出核心，改走插件目录，
     # 故 lightsail 侧用 entry-point 插件，不再用 extraDependencyGroups。
-    hermes-agent-server = {
-      url = "github:NousResearch/hermes-agent/v0.21.7";
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent/v0.22.0";
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";
