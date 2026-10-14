@@ -49,6 +49,7 @@ in
       content = ''
         HINDSIGHT_API_DATABASE_URL=postgresql://hindsight:${config.sops.placeholder."hindsight-db-password"}@hindsight-db:5432/hindsight_db
         HINDSIGHT_API_LLM_API_KEY=${config.sops.placeholder."hindsight-opencode-go-api-key"}
+HINDSIGHT_API_LLM_1_API_KEY=${config.sops.placeholder."hindsight-opencode-go-api-key"}
         HINDSIGHT_API_EMBEDDINGS_OPENAI_API_KEY=${config.sops.placeholder."hindsight-cloudflare-api-token"}
         HINDSIGHT_API_RERANKER_LITELLM_SDK_API_KEY=${config.sops.placeholder."hindsight-nvidia-api-key"}
         # 保险：LiteLLM 的 nvidia_nim provider 也读这个环境变量，与上面的 api_key 同值。

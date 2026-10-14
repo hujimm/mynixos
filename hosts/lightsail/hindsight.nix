@@ -66,7 +66,12 @@ in
           # LLM：OpenCode Go（内置 provider；必需的 x-opencode-session 头由
           # Hindsight 自动注入，见 engine/cache_affinity.py 的 apply_opencode_session）。
           HINDSIGHT_API_LLM_PROVIDER = "opencode-go";
-          HINDSIGHT_API_LLM_MODEL = "deepseek-v4.1-flash";
+          HINDSIGHT_API_LLM_MODEL = "cat-jam-free";
+          # 回退成员 1（failover 顺序：[0]=cat-jam-free → [1]=deepseek-v4.1-flash）。
+          # 成员变量名 HINDSIGHT_API_LLM_<n>_PROVIDER/_MODEL/_API_KEY（n 从 1 连续）。
+          HINDSIGHT_API_LLM_1_PROVIDER = "opencode-go";
+          HINDSIGHT_API_LLM_1_MODEL = "deepseek-v4.1-flash";
+          HINDSIGHT_API_LLM_STRATEGY = builtins.toJSON { mode = "failover"; };
 
           # Embedding：Cloudflare Workers AI，走它的 OpenAI 兼容口（/ai/v1）。
           # qwen3-embedding-0.6b 原生 1024 维，维度由启动探测自动确定。
