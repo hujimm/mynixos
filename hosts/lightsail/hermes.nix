@@ -245,11 +245,11 @@ in
         ];
       };
 
-      # 自动起标题改用 opencode-go 的 glm-5.3-flash（默认走 deepseek-flash 会 400）
+      # 自动起标题改用 opencode-go 的 cat-jam-free（默认走 deepseek-flash 会 400）
       auxiliary = {
         title_generation = {
           provider = "opencode-go";
-          model = "glm-5.3-flash";
+          model = "cat-jam-free";
         };
         background_review.enabled = false;
       };
