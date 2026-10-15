@@ -81,6 +81,15 @@ in
           # CF 侧输入上限 4096 token；Hindsight 按其分词器计数（可能偏大），遇 400 再减半。
           HINDSIGHT_API_EMBEDDINGS_MAX_INPUT_TOKENS = "4096";
 
+          # Qwen3-Embedding 是 instruction-aware 的；官方检索用法是查询侧带
+          # "Instruct: <任务>\nQuery: "、文档侧裸文本（hindsight 分 encode_query /
+          # encode_documents，前缀各管一边，文档向量不受影响，故无需重灌索引）。
+          # 实测 20 文档 / 20 相关 + 5 无关问句：hit@1 70%→90%、MRR 0.850→0.942、
+          # 无关问句最高分 0.340→0.223。任务描述用 CF 自己给的默认那句英文最好；
+          # 换成中文描述反而把正负样本分差压小了（+0.107 vs +0.128）。
+          # ⚠️ 结尾的 "Query: " 后的空格不能省，改了前缀等于换了查询空间，需重跑门槛校准。
+          HINDSIGHT_API_EMBEDDINGS_QUERY_PREFIX = "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery: ";
+
           # Reranker：NVIDIA NIM。Hindsight 的 reranker provider 是固定清单、无任意
           # 透传，NVIDIA 不在其中，故经 LiteLLM SDK 桥接（litellm 是 slim 镜像的
           # 核心依赖，LiteLLM 原生支持 nvidia_nim rerank）。
