@@ -23,8 +23,8 @@ let
   # "10.144.144.0/24" -> "10.144.144"
   prefix = lib.removeSuffix ".0/24" topo.cidr;
 
-  # peers：除自己以外的所有锚点
-  peers = map (n: topo.anchors.${n}) (
+  # peers：除自己以外的所有锚点（每个锚点可含多个 URL，如 v4+v6，一并展开）
+  peers = lib.concatMap (n: topo.anchors.${n}) (
     builtins.filter (n: n != node) (builtins.attrNames topo.anchors)
   );
 in

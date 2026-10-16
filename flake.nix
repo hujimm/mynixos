@@ -11,28 +11,28 @@
       #"https://mirrors.ustc.edu.cn/nix-channels/store?priority=10"
 
       # 社区缓存
-      "https://nix-community.cachix.org?priority=45"
+      # "https://nix-community.cachix.org?priority=45"
 
       # noctalia v5
-      "https://noctalia.cachix.org?priority=50"
+      # "https://noctalia.cachix.org?priority=50"
 
       # ayugram-desktop
-      "https://ayugram-desktop.cachix.org?priority=50"
+      # "https://ayugram-desktop.cachix.org?priority=50"
 
       # AyuGram 的 tg_owt 依赖
-      "https://tg-owt.cachix.org?priority=50"
+      # "https://tg-owt.cachix.org?priority=50"
 
       # fcitx5-vinput 语音输入
       # "https://fcitx5-vinput.cachix.org?priority=10"
 
       # hermes-agent（Tier 2，缓存未必每 rev 都有）
-      "https://hermes-agent.cachix.org?priority=50"
+      # "https://hermes-agent.cachix.org?priority=50"
 
       # llm-agents.nix（numtide 每日更新的 AI agent 包集合）
-      "https://cache.numtide.com?priority=50"
+      # "https://cache.numtide.com?priority=50"
 
       # deepseek-harness（dsh）Nix 打包缓存
-      "https://deepseek-harness-nix.cachix.org?priority=50"
+      # "https://deepseek-harness-nix.cachix.org?priority=50"
     ];
     # 追加在nix.conf的缓存公钥之后
     extra-trusted-public-keys = [

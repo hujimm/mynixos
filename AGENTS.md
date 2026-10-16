@@ -51,7 +51,7 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
 - 各模块目录通过 `default.nix` 聚合导入；新增模块必须挂到对应聚合器，不能绕过 module system。
 - `modules/nixos/network/` 是跨主机共用的 EasyTier 组网模块（独立于 `programs/`/`services/`，
   桌面与各云主机 host 都能 import）。**网络拓扑是唯一事实来源**：网络名、网段、锚点、
-  每个节点的虚拟 IP 全在 `easytier-nodes.nix` 一个文件里；每台 host 只需
+  每个节点的虚拟 IP 全在 `easytier-nodes.nix` 一个文件里（锚点的值是多地址列表，可同时写 v4/v6）；每台 host 只需
   `imports = [ ../../modules/nixos/network ];` 加 `my.easytier.enable = true;`，
   网格显示名与 `networking.hostName` 不一致时（如桌面 hostName 是 `mynixos`）再写
   `my.easytier.node = "vostro-3420";`。加机器 = 拓扑表加一行 + 该机两行。
