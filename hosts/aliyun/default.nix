@@ -1,7 +1,6 @@
 # 阿里云 ECS 云主机：精简 NixOS（基础系统 + SSH + 常用 CLI）。
 # 由 nixos-anywhere 远程安装，磁盘布局见 ./disk-config.nix。
 {
-  config,
   inputs,
   lib,
   pkgs,
@@ -14,34 +13,15 @@
     ./disk-config.nix
     ./sops.nix
     ./mcp-nixos.nix
+    ../../modules/nixos/network
     inputs.disko.nixosModules.disko
   ];
 
-  # EasyTier 组网锚点：本机有公网 IP，作为中心节点，本机与手机都连它。
+  # EasyTier 组网锚点：本机有公网 IP，作为中心节点，其余节点都连它。
+  # 拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix（本机 = aliyun，10.144.144.1）；
   # 网络口令由 sops 渲染为 EnvironmentFile（见 ./sops.nix）。
-  # 固定 IP .1，无 peers；listeners 用模块默认 tcp+udp 0.0.0.0:11010。
-  services.easytier.enable = true;
-
-  services.easytier.instances.main = {
-    environmentFiles = [ config.sops.templates."easytier-env".path ];
-
-    settings = {
-      instance_name = "ctmiop";
-      hostname = "aliyun";
-      network_name = "ctmiop";
-      network_secret = "\${ET_NETWORK_SECRET}"; # 运行时展开，明文不落 store
-      ipv4 = "10.144.144.1/24";
-    };
-
-    extraSettings.flags = {
-      accept_dns = true;
-      private_mode = true;
-    };
-  };
-
-  # NixOS 防火墙放行 EasyTier 监听端口；ECS 安全组需另行放行 TCP+UDP 11010。
-  networking.firewall.allowedTCPPorts = [ 11010 ];
-  networking.firewall.allowedUDPPorts = [ 11010 ];
+  # ECS 安全组需另行放行 TCP+UDP 11010。
+  my.easytier.enable = true;
 
   networking.hostName = "aliyun";
   # 阿里云 VPC 走 DHCP，公网 IP 由 NAT 映射，无需 cloud-init 配网。

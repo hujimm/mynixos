@@ -49,6 +49,16 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   `nix build .#nixosConfigurations.aliyun.config.system.build.toplevel -o ~/nixos-aliyun`。
   替代方案是 `--build-host aliyun-ecs`（在服务器构建、复用服务器 store，但受云主机内存限制）。
 - 各模块目录通过 `default.nix` 聚合导入；新增模块必须挂到对应聚合器，不能绕过 module system。
+- `modules/nixos/network/` 是跨主机共用的 EasyTier 组网模块（独立于 `programs/`/`services/`，
+  桌面与各云主机 host 都能 import）。**网络拓扑是唯一事实来源**：网络名、网段、锚点、
+  每个节点的虚拟 IP 全在 `easytier-nodes.nix` 一个文件里；每台 host 只需
+  `imports = [ ../../modules/nixos/network ];` 加 `my.easytier.enable = true;`，
+  网格显示名与 `networking.hostName` 不一致时（如桌面 hostName 是 `mynixos`）再写
+  `my.easytier.node = "vostro-3420";`。加机器 = 拓扑表加一行 + 该机两行。
+  EasyTier 口令的 sops 声明与 `easytier-env` 模板抽在
+  `modules/nixos/security/easytier-secret.nix`，凡加入网络的 host 让其 sops 配置 import 它
+  （云主机各自的 age key 仍由各自 `sops.nix` 管）；新增能解密口令的主机需同步
+  `modules/nixos/security/.sops.yaml` 的 `secrets/easytier.yaml` 规则并 `sops updatekeys`。
 - `modules/_trash/` 是废弃配置垃圾桶：不会被任何 default.nix 导入，扔进去的文件等系统切换
   确认无误后再删；不要从里面 import 任何东西。
 - `modules/hm/common/` 是被模块直接 `import` 的共享数据，不是模块目录。

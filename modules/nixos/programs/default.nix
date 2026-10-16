@@ -8,6 +8,5 @@
     ./nautilus.nix
     ./matlab.nix
     ./kdeconnect.nix
-    ./easytier.nix
   ];
 }

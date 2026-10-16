@@ -11,28 +11,28 @@
       #"https://mirrors.ustc.edu.cn/nix-channels/store?priority=10"
 
       # 社区缓存
-      #"https://nix-community.cachix.org?priority=45"
+      "https://nix-community.cachix.org?priority=45"
 
       # noctalia v5
-      #"https://noctalia.cachix.org?priority=50"
+      "https://noctalia.cachix.org?priority=50"
 
       # ayugram-desktop
-      #"https://ayugram-desktop.cachix.org?priority=50"
+      "https://ayugram-desktop.cachix.org?priority=50"
 
       # AyuGram 的 tg_owt 依赖
-      #"https://tg-owt.cachix.org?priority=50"
+      "https://tg-owt.cachix.org?priority=50"
 
       # fcitx5-vinput 语音输入
-      #"https://fcitx5-vinput.cachix.org?priority=50"
+      # "https://fcitx5-vinput.cachix.org?priority=10"
 
       # hermes-agent（Tier 2，缓存未必每 rev 都有）
-      #"https://hermes-agent.cachix.org?priority=50"
+      "https://hermes-agent.cachix.org?priority=50"
 
       # llm-agents.nix（numtide 每日更新的 AI agent 包集合）
-      #"https://cache.numtide.com?priority=50"
+      "https://cache.numtide.com?priority=50"
 
       # deepseek-harness（dsh）Nix 打包缓存
-      #"https://deepseek-harness-nix.cachix.org?priority=50"
+      "https://deepseek-harness-nix.cachix.org?priority=50"
     ];
     # 追加在nix.conf的缓存公钥之后
     extra-trusted-public-keys = [
@@ -65,7 +65,6 @@
 
     noctalia = {
       url = "github:noctalia-dev/noctalia/cachix";
-      #inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Noctalia Greeter(greetd 登录界面,与 Noctalia v5 配对使用)
@@ -104,7 +103,7 @@
     # 升级：上游发新 v* tag 且 nix-cache 跑完后，直接 pin 到新 tag，
     # 或改回 github:xifan2333/fcitx5-vinput 后跑 nix flake lock --update-input fcitx5-vinput。
     fcitx5-vinput = {
-      url = "github:xifan2333/fcitx5-vinput/v2.3.26";
+      url = "github:xifan2333/fcitx5-vinput/v2.4.2";
     };
 
     # 3.2.1 已发布并验证(2026-09-10):数据目录迁 com.ffclient.app、librust_api、

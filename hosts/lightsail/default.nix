@@ -13,5 +13,10 @@
     ./vaultwarden.nix
     ./hindsight.nix
     ./hermes.nix
+    ../../modules/nixos/network
   ];
+
+  # EasyTier 组网：拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix
+  # （本机 = lightsail，10.144.144.4，作为叶子节点连 aliyun 锚点）。
+  my.easytier.enable = true;
 }

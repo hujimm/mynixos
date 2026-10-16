@@ -17,7 +17,11 @@ let
   hermesSops = ../../modules/nixos/security/secrets/hermes.yaml;
 in
 {
-  imports = [ inputs.sops-nix.nixosModules.sops ];
+  imports = [
+    inputs.sops-nix.nixosModules.sops
+    # 共享的 EasyTier 口令声明 + easytier-env 模板
+    ../../modules/nixos/security/easytier-secret.nix
+  ];
 
   environment.systemPackages = [ pkgs.sops ];
 

@@ -8,12 +8,13 @@ keys:
   - &lightsail age1autpg6dygq7rtzq4aqzc9km8r6vdtmvp9kcqne7rlmkl8v3pmeashnlzne
 
 creation_rules:
-  # EasyTier 网络口令：桌面 + aliyun 都能解密。规则必须排在通用规则前面（sops 取首个匹配）
+  # EasyTier 网络口令：桌面 + aliyun + lightsail 都能解密。规则必须排在通用规则前面（sops 取首个匹配）
   - path_regex: secrets/easytier\.yaml$
     key_groups:
       - age:
           - *orion
           - *aliyun
+          - *lightsail
   # Vaultwarden 管理令牌：桌面可编辑、lightsail 可解密（其它主机均不需要）
   - path_regex: secrets/vaultwarden\.yaml$
     key_groups:

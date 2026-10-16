@@ -24,9 +24,7 @@
     # 避免匿名按 IP 限流。裸 token 存 secret，经下方模板渲染成完整配置行。
     secrets."github-token" = { };
 
-    # EasyTier 网络口令：单独一个加密文件，只放这一条，方便 aliyun 只解密这一项
-    # （aliyun 是独立 host，仅导入自己的 sops 配置，不引入本机的其余秘密）。
-    secrets."easytier-network-secret".sopsFile = ./secrets/easytier.yaml;
+    # EasyTier 网络口令见 ./easytier-secret.nix（桌面/aliyun/lightsail 共用）。
 
     # 模板：拼出 "access-tokens = github.com=<token>" 整行，由 nix.extraOptions
     # 的 !include 引入。nix 的 access-tokens 不支持 file: 前缀（NixOS/nix#6536
@@ -36,13 +34,6 @@
       content = "access-tokens = github.com=${config.sops.placeholder."github-token"}";
       group = "users";
       mode = "0440";
-    };
-
-    # EasyTier：把口令渲染成 systemd EnvironmentFile，供 easytier-core 读取配置时
-    # 展开 ${ET_NETWORK_SECRET}（见 modules/nixos/programs/easytier.nix）。
-    templates."easytier-env" = {
-      content = "ET_NETWORK_SECRET=${config.sops.placeholder."easytier-network-secret"}";
-      mode = "0400";
     };
   };
 

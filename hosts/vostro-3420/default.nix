@@ -10,7 +10,15 @@
     ../../modules/nixos/desktop
     ../../modules/nixos/services
     ../../modules/nixos/security
+    ../../modules/nixos/network
   ];
+
+  # EasyTier 组网：拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix。
+  # 本机 networking.hostName 是 mynixos，故显式用网格名 vostro-3420（10.144.144.2）。
+  my.easytier = {
+    enable = true;
+    node = "vostro-3420";
+  };
 
   # deepseek-harness overlay：注入 pkgs.dsh scope（dsh、bundles.*、presets.*）。
   # HM 因 useGlobalPkgs = true 自动继承，配合 modules/hm/ai-agent/dsh.nix 使用。
