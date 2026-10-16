@@ -12,7 +12,6 @@
   imports = [
     ./hardware-configuration.nix
     ./disk-config.nix
-    ./astrbot.nix
     ./sops.nix
     ./mcp-nixos.nix
     inputs.disko.nixosModules.disko

@@ -1,5 +1,18 @@
 # AstrBot + NapCat：直接用官方 OCI 镜像跑，不塞进 Nix 闭包。
 #
+# 【已弃用，留作以后重启用时的参考】本文件是桌面版（vostro-3420）配置。
+# 同一套配置也曾在阿里云 ECS 上跑过（原 hosts/aliyun/astrbot.nix，已随弃用删除）。
+# 两处功能完全等价（组件、端口、镜像、volumes、no-new-privileges、aardvark-dns、
+# 防火墙放行逐字一致），只有以下差异，云主机重启时按下表改即可：
+#   - 目录属主：桌面用 orion:users（见文末 tmpfiles）；阿里云改用 root:root
+#     （云主机没有 orion 用户，容器以 root 运行）。
+#   - 端口暴露：桌面只对宿主发布 6185（6199 仅容器网络内给 napcat）；阿里云
+#     6185/6099 都对公网开放，务必先改掉 AstrBot 面板默认密码、给 NapCat WebUI
+#     设 token。
+#   - 登录态：阿里云未迁移 ntqq，首次要用 6099 WebUI 扫码登录 QQ。
+#   - 两处镜像都走 m.daocloud.io 镜像站；某天不可用时换回 soulter/astrbot:latest、
+#     mlikiowa/napcat-docker:latest。
+#
 # 为什么用容器而不是打成 Nix 包：AstrBot 依赖极重（Python 3.12 + pandas/faiss/
 # python-telegram-bot/wechatpy/markitdown… 另外还要 Node.js、ffmpeg、noto-cjk 字体），
 # 而且插件市场会在运行时 pip 装插件、dashboard 缺资源时还会去 GitHub 下载。这些都和

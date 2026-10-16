@@ -135,17 +135,6 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # cua-driver：Computer Use 后台桌面驱动（trycua/cua）。
-    # 为何用 Nix 构建版而非官方 curl|bash 版：curl|bash 发布的二进制把
-    # portal-libei（Wayland 输入）feature-gate 关掉了，在 niri（纯 Wayland）上
-    # 只能看到代理光标、点击无法派发（trycua/cua issue #1982）。
-    # Nix 包用 --features portal-input,portal-capture（== portal-libei）编入了
-    # libei + pipewire，才支持 niri/Wayland 输入。
-    # 保持独立 nixpkgs pin（上游锁 nixos-26.05），不 follow 根 nixpkgs——
-    # 避免 nixos-unstable 的 libspa/libei 漂移破坏该构建；升级走
-    # `nix flake lock --update-input cua`。
-    cua.url = "github:trycua/cua";
   };
 
   outputs =
