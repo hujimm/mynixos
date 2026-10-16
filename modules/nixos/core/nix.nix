@@ -3,10 +3,6 @@
   config,
   ...
 }:
-let
-  # 缓存与信任密钥唯一维护点在 flake.nix 的 nixConfig
-  caches = (import ../../../flake.nix).nixConfig;
-in
 {
 
   nix = {
@@ -27,8 +23,12 @@ in
         "flakes"
       ];
 
-      substituters = caches.substituters;
-      trusted-public-keys = caches.trusted-public-keys;
+      substituters = [
+        "https://cache.nixos.org?priority=40"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      ];
       trusted-users = [
         "@wheel"
         "root"

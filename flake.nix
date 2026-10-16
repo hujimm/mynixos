@@ -2,33 +2,40 @@
   description = "Orion's NixOS flake";
 
   nixConfig = {
-    substituters = [
-      # 3个国内大学镜像(tuna 只镜像活跃 channel 的部分路径,
-      # 其他 nixpkgs rev 的依赖要 SJTU/USTC 才有,所以全开)
-      #"https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=10"
+    # 追加在nix.conf的缓存源之后，nix.conf 里默认只留官方源
+    # 此处默认注释，只在更新和添加的那一次构建临时取消，或加--option，目的是减少平时的重建时间（不让一个包多次query）
+    extra-substituters = [
+      # 3个国内大学镜像
+      #"https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=20"
       #"https://mirror.sjtu.edu.cn/nix-channels/store?priority=20"
       #"https://mirrors.ustc.edu.cn/nix-channels/store?priority=10"
-      # 官方原站
-      "https://cache.nixos.org?priority=40"
+
       # 社区缓存
-      "https://nix-community.cachix.org?priority=45"
+      #"https://nix-community.cachix.org?priority=45"
+
       # noctalia v5
-      "https://noctalia.cachix.org?priority=50"
+      #"https://noctalia.cachix.org?priority=50"
+
       # ayugram-desktop
-      "https://ayugram-desktop.cachix.org?priority=50"
+      #"https://ayugram-desktop.cachix.org?priority=50"
+
       # AyuGram 的 tg_owt 依赖
-      "https://tg-owt.cachix.org?priority=50"
+      #"https://tg-owt.cachix.org?priority=50"
+
       # fcitx5-vinput 语音输入
-      "https://fcitx5-vinput.cachix.org?priority=50"
+      #"https://fcitx5-vinput.cachix.org?priority=50"
+
       # hermes-agent（Tier 2，缓存未必每 rev 都有）
-      "https://hermes-agent.cachix.org?priority=50"
+      #"https://hermes-agent.cachix.org?priority=50"
+
       # llm-agents.nix（numtide 每日更新的 AI agent 包集合）
-      "https://cache.numtide.com?priority=50"
+      #"https://cache.numtide.com?priority=50"
+
       # deepseek-harness（dsh）Nix 打包缓存
-      "https://deepseek-harness-nix.cachix.org?priority=50"
+      #"https://deepseek-harness-nix.cachix.org?priority=50"
     ];
-    trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    # 追加在nix.conf的缓存公钥之后
+    extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       "ayugram-desktop.cachix.org-1:AZ5EqHrJsAKL5YkZYLPEsb1FdD9QlypUwQ0REcJftgA="
@@ -126,13 +133,6 @@
     # disko：nixos-anywhere 依赖它做声明式分区（aliyun 云主机用，见 hosts/aliyun/）。
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Operit2 打包：独立 flake，按发布提交锁定。
-    # 上游改动 push 后，用 `nix flake update operit2` 升级。
-    operit2 = {
-      url = "github:liyinuo2006/operit2-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

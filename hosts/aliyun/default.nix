@@ -15,24 +15,8 @@
     ./astrbot.nix
     ./sops.nix
     ./mcp-nixos.nix
-    inputs.operit2.nixosModules.link
     inputs.disko.nixosModules.disko
   ];
-
-  # Operit2 Link 节点（包与模块来自 operit2-flake）。
-  # 放行规则等确定网络方案后再补：openFirewallOn = [ "<网卡>" ] 或 openFirewallPublic = true。
-  services.operit2-link = {
-    enable = true;
-    # 服务器只有一个 root 用户，节点即以 root 运行（linux.root 为 Satisfied）。
-    user = "root";
-    # 只在 EasyTier 网卡上放行，供其它设备配对/同步连接到本节点。
-    openFirewallOn = [ "tun0" ];
-    # GUI 手动配对只支持 HTTP/WebSocket（不能与 tcp 共用端口）。
-    transports = [
-      "http"
-      "ws"
-    ];
-  };
 
   # EasyTier 组网锚点：本机有公网 IP，作为中心节点，本机与手机都连它。
   # 网络口令由 sops 渲染为 EnvironmentFile（见 ./sops.nix）。
@@ -103,17 +87,19 @@
     vim
   ];
 
-  # 缓存与信任密钥沿用 flake.nix 的唯一维护点
-  # （与 modules/nixos/core/nix.nix 同源），便于日后在服务器上直接 rebuild。
-  nix.settings = let
-    caches = (import ../../flake.nix).nixConfig;
-  in {
+  # 缓存硬编码（与 modules/nixos/core/nix.nix 一致），只保留官方源：
+  # 本机只用 nixpkgs 包（mcp-nixos、easytier 等），不涉及社区 cachix 缓存。
+  nix.settings = {
     experimental-features = [
       "nix-command"
       "flakes"
     ];
-    substituters = caches.substituters;
-    trusted-public-keys = caches.trusted-public-keys;
+    substituters = [
+      "https://cache.nixos.org?priority=40"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
     trusted-users = [
       "root"
       "@wheel"

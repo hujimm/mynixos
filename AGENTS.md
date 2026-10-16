@@ -45,7 +45,7 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   nixos-infect 的 `PROVIDER=lightsail` 预设未处理此点，故自带 `bootstrap.nix`。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，
   会被本机 nightly `nix.gc`（`--delete-older-than 3d`）回收，导致每次重建 aliyun 又把
-  只属于它的包（如 `operit2-cli`）重编。做法：在本机保留一个 root：
+  只属于它的包重编。做法：在本机保留一个 root：
   `nix build .#nixosConfigurations.aliyun.config.system.build.toplevel -o ~/nixos-aliyun`。
   替代方案是 `--build-host aliyun-ecs`（在服务器构建、复用服务器 store，但受云主机内存限制）。
 - 各模块目录通过 `default.nix` 聚合导入；新增模块必须挂到对应聚合器，不能绕过 module system。
@@ -87,10 +87,6 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
 
 - 根 `nixpkgs` 是 `nixos-unstable`；Home Manager、Zen beta 和 Spicetify 跟随根 nixpkgs。
   Noctalia 和 fcitx5-vinput 保持独立的 nixpkgs，AyuGram 使用带 submodules 的 Git input，不要擅自改这些关系。
-- 缓存与信任密钥唯一维护点是 `flake.nix` 的 `nixConfig`：flake 元数据只支持静态子集、
-  不能 import，所以字面写在 flake.nix，`modules/nixos/core/nix.nix` 通过
-  `(import ../../../flake.nix).nixConfig` 读取，两侧共用一份；新增带 cachix 缓存的包时
-  只改 flake.nix，否则构建会尝试官方源。
 - 涉及 nixpkgs 包名、上游模块选项或版本时，**优先用 `nixos` MCP 查询**（见"Nix 查询（mcp-nixos
   远程 MCP）"一节），不要凭旧记忆猜测；MCP 查不到再退回 websearch。
 - 用户执行系统切换：`sudo nixos-rebuild switch --flake .#mynixos`。

@@ -24,7 +24,6 @@
     # 注册 sops-nix 的 Home Manager 模块（noctalia 密钥等用户级解密用）
     sharedModules = [
       inputs.sops-nix.homeManagerModules.sops
-      inputs.operit2.homeModules.default
     ];
     users.orion = import ../../home/orion;
   };
