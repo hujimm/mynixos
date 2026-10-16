@@ -508,26 +508,6 @@
         "type": "github"
       }
     },
-    "operit2": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1791559616,
-        "narHash": "sha256-tnBxAHNpuNk9XtAeH6JPA9WYDf5yOv8E7UhCuXV4bKo=",
-        "owner": "liyinuo2006",
-        "repo": "operit2-flake",
-        "rev": "171ad2bd0023efad13ad8037acadcc2bdae67844",
-        "type": "github"
-      },
-      "original": {
-        "owner": "liyinuo2006",
-        "repo": "operit2-flake",
-        "type": "github"
-      }
-    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -592,7 +572,6 @@
         "nixpkgs": "nixpkgs_7",
         "noctalia": "noctalia",
         "noctalia-greeter": "noctalia-greeter",
-        "operit2": "operit2",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix",
         "zen-browser": "zen-browser"
