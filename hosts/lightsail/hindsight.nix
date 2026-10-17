@@ -159,8 +159,7 @@ in
   ];
 
   # ---- nginx + Let's Encrypt ----
-  # 复用 vaultwarden.nix 里的 security.acme.defaults.email 与全局 TLS/代理参数。
-  services.nginx.enable = true;
+  # 全机 nginx / ACME / 80-443 见 ./nginx.nix；下面只声明本服务的 vhost。
 
   services.nginx.virtualHosts.${apiDomain} = {
     enableACME = true;
@@ -181,10 +180,4 @@ in
       proxyWebsockets = true;
     };
   };
-
-  # 80/443 供 ACME 与访问（vaultwarden.nix 已放行，此处冗余声明以便本文件自洽）。
-  networking.firewall.allowedTCPPorts = [
-    80
-    443
-  ];
 }

@@ -387,7 +387,7 @@ in
   systemd.services.hermes-backend.restartTriggers = [ configSentinel ];
 
   # ── 公网入口：nginx + Let's Encrypt 反代本机后端 9119 ──
-  # 复用 vaultwarden.nix/hindsight.nix 的 security.acme.defaults.email 与全局 TLS 参数。
+  # 全机 nginx / ACME / 80-443 见 ./nginx.nix；下面只声明本服务的 vhost。
   # 后端已绑 0.0.0.0 且启用登录门；9119 本身不对外（防火墙只放 80/443，nginx 走回环）。
   services.nginx.virtualHosts."xixi.liyinuo.tech" = {
     enableACME = true;

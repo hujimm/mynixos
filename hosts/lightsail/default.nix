@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./hardware.nix
+    ./nginx.nix
     ./sops.nix
     ./vaultwarden.nix
     ./hindsight.nix
