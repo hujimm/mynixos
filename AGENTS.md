@@ -25,24 +25,25 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
 
 - 入口链是 `flake.nix` → `hosts/vostro-3420/default.nix` → NixOS 模块与
   `home/orion/default.nix` → Home Manager 模块。
-- `hosts/aliyun/` 是云主机 host（`nixosConfigurations.aliyun`），只 import 自己的
-  `hardware-configuration.nix`、`disk-config.nix` 与 disko 模块，**不复用桌面模块**；
-  它是 nixos-anywhere 装出来的，改配置后用
+- `hosts/aliyun/` 是云主机 host（`nixosConfigurations.aliyun`）：import 自己的
+  `hardware-configuration.nix`、`disk-config.nix`、disko 模块，以及跨主机共用的
+  `modules/nixos/server`（云主机基础）与 `modules/nixos/network`（EasyTier），
+  **不复用桌面模块**；它是 nixos-anywhere 装出来的，改配置后用
   `nixos-rebuild switch --flake .#aliyun --target-host aliyun-ecs`（用户执行）。
 - `hosts/lightsail/` 是 AWS Lightsail host（`nixosConfigurations.lightsail`）。它**不走
   nixos-anywhere/disko**：Lightsail 是 Nitro 平台，kexec 后 ENA/NVMe 不初始化
-  （nixos-anywhere issue #139），且不支持导入镜像；故用 `nixos-infect` 的 lustrate
-  就地安装。`bootstrap.nix` 是自包含配置（显式 UEFI、ESP 在 `/boot/efi`、按 UUID 挂盘），
-  既用于就地安装，也被 flake host 复用。重建用
+  （nixos-anywhere issue #139），且不支持导入镜像；故当时用 `nixos-infect` 的 lustrate
+  就地安装。**装机用的单文件配置在单独仓库维护，不在本仓库**；本仓库的
+  `hosts/lightsail/hardware.nix` 只描述日常硬件（显式 UEFI、ESP 在 `/boot/efi`、
+  按 UUID 挂盘），和普通 host 一样参与 rebuild。重建用
   `nixos-rebuild switch --flake .#lightsail --target-host lightsail`（用户执行）。
-  **坑（注意）**：`bootstrap.nix` 里的 `boot.initrd.systemd.enable = false;` 默认是**注释掉的**，
-  只在该文件用于**重装新机**（nixos-infect 就地安装）时才需要放开。原因：NixOS 26.05 起该选项
-  默认为 true，而 nixos-infect 依赖的 `NIXOS_LUSTRATE`（首次启动把旧 Ubuntu 整体挪到
-  `/old-root`）只在 bash 版 stage-1 的 `lustrateRoot` 里实现，systemd-initrd 没有这段逻辑；
-  首次启动不关就会单元泄漏、网络起不来 → 装完失联（Lightsail 与 EC2 一致，已在 EC2 串口实锤）。
-  已装好的机器不受影响：lustrate 只发生一次（新根上已无 `/etc/NIXOS_LUSTRATE`，清单在
-  `/old-root/`），故日常重建用默认 systemd-initrd 即可，也免掉 26.11 移除脚本式 initrd 的警告。
-  nixos-infect 的 `PROVIDER=lightsail` 预设未处理此点，故自带 `bootstrap.nix`。
+  **坑（留给装机仓库）**：nixos-infect 就地安装时，必须放开
+  `boot.initrd.systemd.enable = false;`。原因：NixOS 26.05 起该选项默认为 true，而
+  `NIXOS_LUSTRATE`（首次启动把旧 Ubuntu 整体挪到 `/old-root`）只在 bash 版 stage-1 的
+  `lustrateRoot` 里实现，systemd-initrd 没有这段逻辑；首次启动不关就会单元泄漏、
+  网络起不来 → 装完失联（Lightsail 与 EC2 一致，已在 EC2 串口实锤）。lustrate 只发生
+  一次（新根上已无 `/etc/NIXOS_LUSTRATE`，清单在 `/old-root/`），已装好的机器日常
+  重建用默认 systemd-initrd 即可，也免掉 26.11 移除脚本式 initrd 的警告。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，
   会被本机 nightly `nix.gc`（`--delete-older-than 3d`）回收，导致每次重建 aliyun 又把
   只属于它的包重编。做法：在本机保留一个 root：
@@ -57,8 +58,14 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   `my.easytier.node = "vostro-3420";`。加机器 = 拓扑表加一行 + 该机两行。
   EasyTier 口令的 sops 声明与 `easytier-env` 模板抽在
   `modules/nixos/security/easytier-secret.nix`，凡加入网络的 host 让其 sops 配置 import 它
-  （云主机各自的 age key 仍由各自 `sops.nix` 管）；新增能解密口令的主机需同步
+  （云主机经 `sops-cloud.nix` 自动 import；各机 age 公钥仍列在 `.sops.yaml`）；新增能解密口令的主机需同步
   `modules/nixos/security/.sops.yaml` 的 `secrets/easytier.yaml` 规则并 `sops updatekeys`。
+- `modules/nixos/server/` 是云主机（aliyun / lightsail）共用的基础模块：UEFI GRUB
+  （可移动回退路径，ESP 挂载点由各 host 设）、2GiB swapfile + zswap、SSH 加固、DHCP、
+  时区、git/vim、nix 设置与 GC。**桌面不 import**；host 特有内容（磁盘、内核模块、
+  SSH 公钥、专有服务）留在 `hosts/`。两台云主机的 sops 骨架抽在
+  `modules/nixos/security/sops-cloud.nix`，各自的 `sops.nix` 只写 `defaultSopsFile`
+  与自己的密钥。
 - `modules/_trash/` 是废弃配置垃圾桶：不会被任何 default.nix 导入，扔进去的文件等系统切换
   确认无误后再删；不要从里面 import 任何东西。
 - `modules/hm/common/` 是被模块直接 `import` 的共享数据，不是模块目录。

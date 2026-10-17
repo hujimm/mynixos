@@ -1,13 +1,8 @@
-# lightsail 的系统级 sops：解密 Vaultwarden 管理令牌与 Hindsight 密钥。
+# lightsail 的系统级 sops：解密 Vaultwarden 管理令牌与 Hindsight / hermes 密钥。
 #
-# 与 aliyun 一致：age 私钥不从文件读取，而是由 SSH host key 派生
-# （sops-nix 内部调用 ssh-to-age）。因此本机的 age 公钥已列为
-# modules/nixos/security/.sops.yaml 里 secrets/vaultwarden.yaml、
-# secrets/hindsight.yaml 与 secrets/hermes.yaml 的收件人。
-#
-# 取公钥（在 lightsail 上）：
-#   nix shell nixpkgs#ssh-to-age -c ssh-to-age -i /etc/ssh/ssh_host_ed25519_key.pub
-{ inputs, config, pkgs, ... }:
+# 通用骨架（sops-nix 模块、age key 路径、EasyTier 口令声明）见
+# modules/nixos/security/sops-cloud.nix；本机只写自己的 defaultSopsFile 与密钥。
+{ config, ... }:
 
 let
   # Hindsight 的密钥单独一个加密文件（LLM/embedding/reranker 的 API key、自设的
@@ -17,16 +12,9 @@ let
   hermesSops = ../../modules/nixos/security/secrets/hermes.yaml;
 in
 {
-  imports = [
-    inputs.sops-nix.nixosModules.sops
-    # 共享的 EasyTier 口令声明 + easytier-env 模板
-    ../../modules/nixos/security/easytier-secret.nix
-  ];
-
-  environment.systemPackages = [ pkgs.sops ];
+  imports = [ ../../modules/nixos/security/sops-cloud.nix ];
 
   sops = {
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     defaultSopsFile = ../../modules/nixos/security/secrets/vaultwarden.yaml;
 
     secrets."vaultwarden-admin-token" = { };
