@@ -3,7 +3,7 @@ _: {
     enable = true;
     settings = {
       user = {
-        name = "liyinuo2006";
+        name = "hujimm";
         email = "orionli2006@gmail.com";
       };
 

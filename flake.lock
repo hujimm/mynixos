@@ -187,13 +187,13 @@
       "locked": {
         "lastModified": 1789014748,
         "narHash": "sha256-LtFioqv8PjmypRv0L7R+pOd3w7aPCQQENrK++mpk/Jw=",
-        "owner": "liyinuo2006",
+        "owner": "hujimm",
         "repo": "flashfox-lite-flake",
         "rev": "916741bd94fa35f3a8c374e633ae30ed2e6b839d",
         "type": "github"
       },
       "original": {
-        "owner": "liyinuo2006",
+        "owner": "hujimm",
         "repo": "flashfox-lite-flake",
         "type": "github"
       }

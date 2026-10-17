@@ -110,7 +110,7 @@
     # libsecret、schema 目录、GSETTINGS_SCHEMA_DIR 等适配点全部完成。
     # 升级:上游发新版本后先按其 AGENTS.md 升级流程处理,再 lock --update-input。
     flashfox-lite = {
-      url = "github:liyinuo2006/flashfox-lite-flake";
+      url = "github:hujimm/flashfox-lite-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

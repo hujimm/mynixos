@@ -144,7 +144,7 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
 
 ## 闪狐（flashfox-lite）
 
-- 来源：独立 flake `github:liyinuo2006/flashfox-lite-flake`（系统代理与 TUN 均已完整适配
+- 来源：独立 flake `github:hujimm/flashfox-lite-flake`（系统代理与 TUN 均已完整适配
   NixOS 且**可同时开启**，机制细节见其 README 与 TUN-RESEARCH.md（§15 3.0.6、§17 3.2.1 复盘）；
   输入跟随根 nixpkgs）。当前版本 3.2.1（2026-09 升级，含 /opt bundle 迁移、librust_api、
   libsecret、schema 目录、数据目录迁移五个适配点）。
