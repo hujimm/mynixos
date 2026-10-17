@@ -1,12 +1,7 @@
 { ... }:
 {
-  # 组网模块的“聚合入口”：只负责把同目录下的模块 import 进来。
-  #
-  # 【语法】`{ ... }:` 是模块函数，`...` 表示“参数随便给，我不用”。
-  # 下面 `imports = [ ... ]` 是 NixOS 模块系统的固定写法：
-  # 列表里每个路径都会被当成“模块”加载，效果等同于把它们的内容合并进来。
-  #
-  # 这个目录独立于 programs/ 与 services/，桌面与各云主机 host 都能 import。
+  # 组网模块：EasyTier 覆盖网（拓扑数据在同目录 easytier-nodes.nix）。
+  # 独立于 programs/ 与 services/，供桌面与各云主机 host 共用。
   imports = [
     ./easytier.nix
   ];
