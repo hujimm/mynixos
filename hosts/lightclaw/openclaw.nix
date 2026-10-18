@@ -27,10 +27,12 @@ in
       user = ./workspace/USER.md;
     };
 
-    # 内置工具插件：summarize（总结网页/PDF/视频）开启；
-    # goplaces 出厂默认就是开的，这里显式关掉（不用 Google Places）。
+    # 内置工具插件：
+    # - summarize 关掉：nix-openclaw 把它的 skill 目录直接当 extraDirs（loader 却找 <dir>/skills），
+    #   会持续报 FsSafeError；关掉插件即消除该报错（OpenClaw 自带的 summarize skill 仍在）。
+    # - goplaces 出厂默认就是开的，显式关掉（不用 Google Places）。
     bundledPlugins = {
-      summarize.enable = true;
+      summarize.enable = false;
       goplaces.enable = false;
     };
 
@@ -76,6 +78,49 @@ in
       # 联网搜索默认 provider（exa / tavily 两个插件由 runtimePlugins 自动启用，
       # nix-openclaw 会自动写 plugins.entries.<id>.enabled = true，无需在此重复）。
       tools.web.search.provider = "tavily";
+
+      # A. 语义记忆：机器没有 embedding key，默认的 openai/text-embedding-3-small 会降级成
+      # keyword-only（memory_search ~6s、索引 dirty）。直接关掉；索引范围也收窄成只含 memory。
+      memory.search.enabled = false;
+      memory.search.sources = [ "memory" ];
+
+      # B. 插件白名单：只保留这台机器实际用到的。
+      #    exa / tavily 由 runtimePlugins 自动追加进 allow；telegram 是 bundled channel、
+      #    由 channels.telegram 激活，不能也不需要放进 allow。
+      plugins.allow = [
+        "memory-core"
+        "opencode-go"
+        "tavily"
+        "document-extract"
+        "file-transfer"
+        "web-readability"
+        "github"
+      ];
+
+      # C. 浏览器：机器上没有 chromium，默认启用是坏的，显式关掉。
+      browser.enabled = false;
+
+      # E1. 只保留与这台机器用途相关的 OpenClaw 自带技能（workspace/managed 技能不受此限）。
+      skills.allowBundled = [
+        "acp-router"
+        "browser-automation"
+        "clawhub"
+        "control-ui"
+        "diagnose-gateway"
+        "github"
+        "healthcheck"
+        "openclaw-host-health-check"
+        "skill-creator"
+        "summarize"
+        "tavily"
+        "weather"
+        "visualize"
+        "diagram-maker"
+        "node-connect"
+        "python-debugpy"
+        "node-inspect-debugger"
+        "spike"
+      ];
 
       # 模型：用 OpenClaw **内置**的 OpenCode Go provider，ref = "opencode-go/<模型id>"，
       # 无需自定义 provider；凭证走上面的 OPENCODE_API_KEY。
