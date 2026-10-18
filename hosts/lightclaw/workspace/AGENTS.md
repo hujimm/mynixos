@@ -42,7 +42,8 @@
 - 服务用 `systemctl`；你自己这个网关是 `systemctl --user status openclaw-gateway`。
 - 可用 CLI：`node`/`pnpm`、`git`、`curl`、`jq`、`python3`、`ffmpeg`、`sox`、`ripgrep`、
   `gog`（gogcli）、`goplaces`、`summarize`、`camsnap`、`sonoscli`，以及 `gh`（GitHub CLI，凭证已配好）。
-- 网络：本机只监听回环，出站可用；**不在** EasyTier 覆盖网里。
+- 网络：本机只监听回环，出站可用；在 **EasyTier** 覆盖网里（`tun0 = 10.144.144.6`），
+  可直达 aliyun 的 `10.144.144.1`（那台跑着 mcp-nixos，端口 8000）。
 - Telegram 是主渠道：用简洁文本/列表，少用表格；长耗时命令放后台并给进度，不要静默卡住。
 
 ## 行为准则（Red Lines）
