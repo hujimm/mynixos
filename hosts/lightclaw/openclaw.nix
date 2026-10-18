@@ -112,8 +112,12 @@ in
       # B. 插件白名单：只保留这台机器实际用到的。
       #    exa / tavily 由上面的 runtimePlugins 自动追加进 allow；telegram 是 bundled
       #    channel、由 channels.telegram 激活，不能也不需要放进 allow。
+      #    active-memory = 记忆的"升级检索道"（Lane 2）：仅在消息显示回忆意图、且
+      #    Lane 1 没命中时，回话前跑一次子 agent 深挖（含当前 agent 的历史）。
+      #    它的跨会话部分仍受 memory.search.rememberAcrossConversations=false 约束。
       plugins.allow = [
         "memory-core"
+        "active-memory"
         "opencode-go"
         "tavily"
         "document-extract"
@@ -121,6 +125,8 @@ in
         "web-readability"
         "github"
       ];
+      # 显式打开（它默认可能不开；上游只在需要时启用这个伴生插件）
+      plugins.entries."active-memory".enabled = true;
 
       # C. 浏览器：机器上没有 chromium，默认启用是坏的，显式关掉。
       browser.enabled = false;
