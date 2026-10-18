@@ -107,6 +107,12 @@ in
         # 关它的理由：这台机器内存吃紧，转写索引会多养 transcript worker。
         sources = [ "memory" ];
         rememberAcrossConversations = false;
+
+        # CJK 分词：默认 unicode61 会把一串汉字整体当一个 token → 关键词那半对中文等于失效
+        # （我们 USER.md/记忆都是中文）。trigram 是 OpenClaw schema 官方暴露的取值
+        # （enum: unicode61 | trigram），SQLite 3.53 实测可用：改成 3 字符滑窗后中文子串可匹配。
+        # 代价：索引略大、英文词边界语义丢失（语义那半由向量兜底）。改了要重建索引。
+        store.fts.tokenizer = "trigram";
       };
 
       # B. 插件白名单：只保留这台机器实际用到的。
