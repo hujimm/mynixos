@@ -183,6 +183,10 @@ in
       # 无需自定义 provider；凭证走上面的 OPENCODE_API_KEY。
       # 显式把上下文钉成 1000K（Go 目录默认按 200K 处理）。merge 模式只覆盖元数据，
       # 不影响 provider 的目录发现（models.mode 默认即 merge）。
+      #
+      # compat.supportedReasoningEfforts 显式钉死推理档位：上游/插件声明的
+      # ["low" "high" "max"] 在 OpenClaw 的 thinking profile 推导里会被退化成
+      # 只剩 off/ultra（菜单与校验不一致），显式写出来让菜单、会话校验、llm-task 对齐。
       models.providers.opencode-go.models = [
         {
           id = "deepseek-v4.1-flash";
@@ -192,6 +196,14 @@ in
             "text"
             "image"
           ];
+          compat = {
+            supportsReasoningEffort = true;
+            supportedReasoningEfforts = [
+              "low"
+              "high"
+              "max"
+            ];
+          };
         }
         {
           id = "longcat-2.5-preview-free";
