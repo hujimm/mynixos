@@ -37,6 +37,14 @@
   networking.useDHCP = lib.mkDefault true;
   time.timeZone = "Asia/Shanghai";
 
+  # 限制 journald：这些机器盘小，且历史上被刷屏过（aliyun 曾因 easytier 对 v6 地址
+  # 反复拨号失败，把 journal 撑到 775MB、journald 内存 702MB）。设上限后一起回落。
+  services.journald.settings.Journal = {
+    SystemMaxUse = "150M";
+    SystemMaxFileSize = "50M";
+    MaxRetentionSec = "2week";
+  };
+
   environment.systemPackages = with pkgs; [
     git
     vim
