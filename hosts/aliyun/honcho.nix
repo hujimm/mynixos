@@ -112,9 +112,10 @@ in
     };
     script = ''
       set -e
-      psql -h /run/postgresql -d postgres -c "ALTER ROLE honcho WITH PASSWORD '$(cat ${config.sops.secrets."honcho-db-password".path})'"
-      psql -h /run/postgresql -d honcho -c "CREATE EXTENSION IF NOT EXISTS vector"
-      psql -h /run/postgresql -d honcho -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+      psql=${config.services.postgresql.package}/bin/psql
+      $psql -h /run/postgresql -d postgres -c "ALTER ROLE honcho WITH PASSWORD '$(cat ${config.sops.secrets."honcho-db-password".path})'"
+      $psql -h /run/postgresql -d honcho -c "CREATE EXTENSION IF NOT EXISTS vector"
+      $psql -h /run/postgresql -d honcho -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
     '';
   };
 
