@@ -186,12 +186,15 @@ in
       #
       # compat.supportedReasoningEfforts 显式钉死推理档位：上游/插件声明的
       # ["low" "high" "max"] 在 OpenClaw 的 thinking profile 推导里会被退化成
-      # 只剩 off/ultra（菜单与校验不一致），显式写出来让菜单、会话校验、llm-task 对齐。
+      # 只剩 off/ultra（菜单与校验不一致）。必须同时写 reasoning = true，
+      # 否则 configured 行被当成非推理模型，档位塌成 off + ultra（harness 档）。
       models.providers.opencode-go.models = [
         {
           id = "deepseek-v4.1-flash";
           name = "DeepSeek V4.1 Flash";
+          reasoning = true;
           contextTokens = 1000000;
+          maxTokens = 384000;
           input = [
             "text"
             "image"
