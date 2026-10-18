@@ -247,7 +247,7 @@ in
       # final 不适用：实测 final/reranker 在所有结果上都稳定在 1.06~1.12，只是整体挪
       # 刻度、不增加区分度，却会把近因/证据量加成的漂移带进门槛。
       recall_min_scores = {
-        reranker = 0.02;
+        reranker = 0.01;
       };
     };
 
@@ -277,11 +277,10 @@ in
         ];
       };
 
-      # 自动起标题改用 opencode-go 的 cat-jam-free（默认走 deepseek-flash 会 400）
       auxiliary = {
         title_generation = {
           provider = "opencode-go";
-          model = "cat-jam-free";
+          model = "longcat-2.5-preview-free";
         };
         background_review.enabled = false;
       };

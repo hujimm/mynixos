@@ -18,10 +18,17 @@ let
   # "10.144.144.0/24" -> "10.144.144"
   prefix = lib.removeSuffix ".0/24" topo.cidr;
 
-  # 除自己以外的所有锚点（每个锚点可含多个 URL，如 v4+v6）
-  peers = lib.concatMap (n: topo.anchors.${n}) (
+  # 除自己以外的所有锚点 URL（每个锚点可含多个 URL，如 v4+v6）
+  allPeers = lib.concatMap (n: topo.anchors.${n}) (
     builtins.filter (n: n != node) (builtins.attrNames topo.anchors)
   );
+  # v6 URL 形如 tcp://[2406:...]:11010。本机没有 IPv6 路由时（my.easytier.ipv6 = false）
+  # 把它们从 peers 里去掉——否则 easytier 会每秒对 v6 地址反复拨号失败，刷爆 journal。
+  peers =
+    if config.my.easytier.ipv6 then
+      allPeers
+    else
+      builtins.filter (u: !(lib.hasInfix "[" u)) allPeers;
 in
 {
   options.my.easytier = {
@@ -31,6 +38,15 @@ in
       type = lib.types.str;
       default = config.networking.hostName;
       description = "本机在 easytier-nodes.nix 里的节点名，同时用作网格显示名。";
+    };
+
+    ipv6 = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        是否把锚点里的 IPv6 地址加入 peers。本机没有 IPv6 路由时设为 false，
+        避免对 v6 地址反复拨号失败。只影响本机，不改动拓扑表。
+      '';
     };
   };
 

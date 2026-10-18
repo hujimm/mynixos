@@ -21,6 +21,9 @@
   # 网络口令由 sops 渲染为 EnvironmentFile（见 ./sops.nix）。
   # ECS 安全组需另行放行 TCP+UDP 11010。
   my.easytier.enable = true;
+  # 本机没有 IPv6 路由（ECS 未配 v6）：不把锚点的 v6 地址放进 peers，
+  # 否则 easytier 会对 lightsail 的 v6 反复拨号失败、每秒刷两三条日志（曾把 journal 撑到 775MB）。
+  my.easytier.ipv6 = false;
 
   networking.hostName = "aliyun";
 

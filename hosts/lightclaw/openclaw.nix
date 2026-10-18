@@ -130,17 +130,24 @@ in
           id = "deepseek-v4.1-flash";
           name = "DeepSeek V4.1 Flash";
           contextTokens = 1000000;
+          input = [
+            "text"
+            "image"
+          ];
         }
         {
           id = "longcat-2.5-preview-free";
           name = "LongCat 2.5 Preview Free";
           contextTokens = 1000000;
+          input = [
+            "text"
+            "image"
+          ];
         }
       ];
       # 主模型：对话与 agent 工作。
       agents.defaults.model.primary = "opencode-go/deepseek-v4.1-flash";
       # 辅助模型：标题生成、摘要、进度叙述等短任务。
-      # cat-jam-free 已下架，改用 Go 目录里的 longcat-2.5-preview-free。
       agents.defaults.utilityModel = "opencode-go/longcat-2.5-preview-free";
     };
   };
