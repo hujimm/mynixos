@@ -82,9 +82,9 @@ in
       # 主模型：对话与 agent 工作。
       agents.defaults.model.primary = "opencode-go/deepseek-v4.1-flash";
       # 辅助模型：标题生成、摘要、进度叙述等短任务。
-      # 注：hermes 用的 cat-jam-free 不在 OpenCode Go 目录里（实测 --all 也没有），
-      # 改用同样便宜的 flash 模型。
-      agents.defaults.utilityModel = "opencode-go/glm-5.3-flash";
+      # cat-jam-free 是 Go 的"隐藏"模型：未出现在账户 /models 列表里，但实际可用
+      # （实测对 .../inference/go/openai/v1 发请求返回 200）。故直接显式引用。
+      agents.defaults.utilityModel = "opencode-go/cat-jam-free";
     };
   };
 
