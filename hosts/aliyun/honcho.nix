@@ -67,12 +67,16 @@ let
   ''
   + lib.concatMapStrings chatBlock chatSections;
 
-  # api 的入口：官方 entrypoint 只是 迁移 + fastapi（8000），这里改为 8010。
-  apiEntry = pkgs.writeShellScriptBin "honcho-api-entry" ''
-    set -e
-    /app/.venv/bin/python scripts/provision_db.py
-    exec /app/.venv/bin/fastapi run --host 0.0.0.0 --port ${toString honchoPort} --workers "''${API_WORKERS:-1}" src/main.py
-  '';
+  # api 入口：镜像自带 /bin/sh，直接跑"迁移 + fastapi(8010)"。
+  # 不用 writeShellScriptBin——它的 shebang 指向 nix 的 bash，镜像里没有。
+  apiCmd = [
+    "-c"
+    ''
+      set -e
+      /app/.venv/bin/python scripts/provision_db.py
+      exec /app/.venv/bin/fastapi run --host 0.0.0.0 --port ${toString honchoPort} --workers "''${API_WORKERS:-1}" src/main.py
+    ''
+  ];
 
   envFile = config.sops.templates."honcho-env".path;
 in
@@ -148,12 +152,10 @@ in
   virtualisation.oci-containers.containers = {
     honcho-api = {
       image = image;
-      entrypoint = "${apiEntry}/bin/honcho-api-entry";
+      entrypoint = "/bin/sh";
+      cmd = apiCmd;
       environmentFiles = [ envFile ];
-      volumes = [
-        "/etc/honcho/config.toml:/app/config.toml:ro"
-        "${apiEntry}/bin/honcho-api-entry:/usr/local/bin/honcho-api-entry:ro"
-      ];
+      volumes = [ "/etc/honcho/config.toml:/app/config.toml:ro" ];
       extraOptions = [ "--network=host" ];
     };
     honcho-deriver = {
