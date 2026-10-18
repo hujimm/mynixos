@@ -102,7 +102,6 @@ in
 
       # E1. 只保留与这台机器用途相关的 OpenClaw 自带技能（workspace/managed 技能不受此限）。
       skills.allowBundled = [
-        "acp-router"
         "browser-automation"
         "clawhub"
         "control-ui"
