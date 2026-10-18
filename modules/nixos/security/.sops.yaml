@@ -42,6 +42,12 @@ creation_rules:
       - age:
           - *orion
           - *lightclaw
+  # Honcho（aliyun 上的记忆服务）密钥：桌面可编辑、aliyun 可解密
+  - path_regex: secrets/honcho\.yaml$
+    key_groups:
+      - age:
+          - *orion
+          - *aliyun
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
