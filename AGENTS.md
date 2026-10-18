@@ -1,9 +1,10 @@
 # AGENTS.md — mynixos
 
-Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（本机 vostro-3420 桌面）、
-`nixosConfigurations.aliyun`（阿里云 ECS，nixos-anywhere 安装）与
-`nixosConfigurations.lightsail`（AWS Lightsail，nixos-infect 就地安装）。
-硬件目录分别是 `hosts/vostro-3420/`、`hosts/aliyun/`、`hosts/lightsail/`。
+Orion 的 NixOS flake，有四个配置输出：`nixosConfigurations.mynixos`（本机 vostro-3420 桌面）、
+`nixosConfigurations.aliyun`（阿里云 ECS，nixos-anywhere 安装）、
+`nixosConfigurations.lightsail`（AWS Lightsail，nixos-infect 就地安装）与
+`nixosConfigurations.lightclaw`（另一台 AWS Lightsail t3.medium，同样 nixos-infect 就地安装）。
+硬件目录分别是 `hosts/vostro-3420/`、`hosts/aliyun/`、`hosts/lightsail/`、`hosts/lightclaw/`。
 
 ## 硬性规则
 
@@ -44,6 +45,13 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   网络起不来 → 装完失联（Lightsail 与 EC2 一致，已在 EC2 串口实锤）。lustrate 只发生
   一次（新根上已无 `/etc/NIXOS_LUSTRATE`，清单在 `/old-root/`），已装好的机器日常
   重建用默认 systemd-initrd 即可，也免掉 26.11 移除脚本式 initrd 的警告。
+- `hosts/lightclaw/` 是第二台 AWS Lightsail（`nixosConfigurations.lightclaw`，t3.medium、悉尼、
+  80G 盘），同样用 nixos-infect 就地安装。与 lightsail 出自**同一 AMI，三个分区的
+  UUID/PARTUUID 完全相同**（装机清理 `/old-root` 后已无 Ubuntu 残留）。目前只 import
+  `modules/nixos/server`：无任何服务，也**未**加入 EasyTier 网格。重建用
+  `nixos-rebuild switch --flake .#lightclaw --target-host lightclaw`（用户执行）；
+  其装机单文件配置（hostName=lightclaw、2GiB swap+zswap、关闭 systemd-initrd）与 lightsail
+  一样不在本仓库。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，
   会被本机 nightly `nix.gc`（`--delete-older-than 3d`）回收，导致每次重建 aliyun 又把
   只属于它的包重编。做法：在本机保留一个 root：

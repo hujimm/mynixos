@@ -163,5 +163,12 @@
         specialArgs = { inherit inputs; };
         modules = [ ./hosts/lightsail ];
       };
+
+      # 另一台 AWS Lightsail（t3.medium，悉尼），同样 nixos-infect 安装；
+      # 只跑云主机共用基础，目前无服务、也未入 EasyTier 网格。见 hosts/lightclaw/。
+      nixosConfigurations.lightclaw = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
+        modules = [ ./hosts/lightclaw ];
+      };
     };
 }
