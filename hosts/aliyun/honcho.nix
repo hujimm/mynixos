@@ -141,6 +141,8 @@ in
       CF_EMBEDDING_API_KEY=${config.sops.placeholder."honcho-cloudflare-api-token"}
       DB_CONNECTION_URI=postgresql+psycopg://honcho:${config.sops.placeholder."honcho-db-password"}@127.0.0.1:5432/honcho
       API_WORKERS=1
+      # 环境变量优先于 config.toml；迁移脚本读的是这个（否则按默认 1536 建列）。
+      EMBEDDING_VECTOR_DIMENSIONS=1024
     '';
     mode = "0400";
   };
