@@ -4,72 +4,11 @@
 # 权限：默认即 OpenClaw 官方的"单信任域"姿态（exec 无审批）；命令以 openclaw 用户执行，
 #       该用户有免密 sudo，故 agent 需要时可提权。
 # 入口：只监听 127.0.0.1:18789；Telegram 走出站长轮询，不需要任何公网端口。
-{ osConfig, pkgs, lib, ... }:
+{ osConfig, pkgs, ... }:
 
 let
   # sops 渲染出的运行时文件路径（只在激活期产生，不进 nix store）。
   secrets = osConfig.sops.secrets;
-
-  # ---- Honcho 记忆插件（官方 npm 包 @honcho-ai/openclaw-honcho）----
-  # 为什么不走 nix-openclaw 的 runtimePluginSources：它的构建校验（install.mjs）要求插件
-  # 自带依赖证据（bundled node_modules 或 npm-shrinkwrap.json），而 honcho 的发布物两者
-  # 都没有（依赖靠安装时 npm 现场解析，而 nix-openclaw 禁止构建期跑包管理器）；此外它把
-  # 入口写在 package.json 的 `extensions` 而非 `runtimeExtensions`，install.mjs 还会再报
-  # "no runtime entry"。所以这里按 install.mjs 的做法自己物化依赖并组装出 OpenClaw 认可的
-  # 插件 root，再经 plugins.load.paths 接入（nix-openclaw README 认可的逃生舱）。
-  # 升级插件时：改 honchoVersion，重建后按报错更新下面两个 hash。
-  gatewayPkg = pkgs.openclaw-gateway; # 必须是 gateway 包：overlay 里 pkgs.openclaw 只是薄包装，
-  #                                     而插件 peer 一律链到 ${gateway}/lib/openclaw（同 nix-openclaw）。
-  honchoVersion = "1.7.0";
-
-  # 官方 npm tarball（hash = 该 tarball 的 sha256-SRI）。
-  honchoSrc = pkgs.fetchurl {
-    url = "https://registry.npmjs.org/@honcho-ai/openclaw-honcho/-/openclaw-honcho-${honchoVersion}.tgz";
-    hash = "sha256-F1zkDsITr6j6armXJw02gZk+7CU122kOH1NOL4k3vgk=";
-  };
-
-  # 固定输出派生（FOD，允许联网）：装生产依赖。输出按 hash 钉死 —— 上游依赖漂移会导致
-  # 构建失败而不是静默变化。
-  honchoDeps = pkgs.stdenvNoCC.mkDerivation {
-    pname = "openclaw-honcho-deps";
-    version = honchoVersion;
-    dontUnpack = true;
-    dontInstall = true;
-    dontFixup = true;
-    nativeBuildInputs = [
-      pkgs.nodejs_24
-      pkgs.cacert
-    ];
-    # 沙箱里没有 CA 库，node/npm 会报 UNABLE_TO_GET_ISSUER_CERT_LOCALLY；显式喂证书。
-    env = {
-      SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-      NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-    };
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-    outputHash = "sha256-7VU6Zz6nzzbR1d67quxAS/s3wYxdoSAaulHz4xoBX20=";
-    buildPhase = ''
-      runHook preBuild
-      export HOME=$TMPDIR
-      export npm_config_cache=$TMPDIR/npm-cache
-      mkdir -p $out
-      tar -xzf ${honchoSrc} -C $out
-      cd $out/package
-      # --legacy-peer-deps：不解析/不拉 openclaw peer（运行时由 node_modules/openclaw 软链提供）
-      npm install --omit=dev --omit=peer --legacy-peer-deps --ignore-scripts --no-audit --no-fund
-      rm -rf node_modules/.bin
-      runHook postBuild
-    '';
-  };
-
-  # 组装插件 root：包内容 + node_modules + openclaw peer 软链（= install.mjs 的形状）。
-  honchoPlugin = pkgs.runCommand "openclaw-honcho-plugin-${honchoVersion}" { } ''
-    cp -r ${honchoDeps}/package $out
-    chmod -R u+w $out
-    rm -rf $out/node_modules/.bin
-    mkdir -p $out/node_modules
-    ln -sfn ${gatewayPkg}/lib/openclaw $out/node_modules/openclaw
-  '';
 in
 {
   home.stateVersion = "26.05";
@@ -97,11 +36,13 @@ in
       goplaces.enable = false;
     };
 
-    # 联网搜索的两个 provider（exa / tavily）与 Honcho 记忆插件，统一走下面的
-    # config.plugins.load.paths 接入，不用 runtimePlugins —— 因为 runtimePlugins 与原始
-    # load.paths 在同一实例里互斥（nix-openclaw 断言），而 Honcho 必须走原始路径。
-    # 代价：失去模块对 exa/tavily 的自动 allow/入口与 registry 隔离，故下面 allow 与
-    # entries 要自己列全。
+    # 运行时插件：联网搜索的两个 provider（exa / tavily）。
+    # 两个都装好；实际用哪个由下面 config.tools.web.search.provider 决定。
+    # nix-openclaw 会自动写 plugins.entries.<id>.enabled = true，并把 id 追加进 plugins.allow。
+    runtimePlugins = [
+      "exa"
+      "tavily"
+    ];
 
     # GitHub CLI（nix-openclaw 默认工具链不带 gh）。凭证走下面的 GITHUB_TOKEN，
     # 按 OpenClaw 的 native 解析顺序生效（GH_TOKEN/GITHUB_TOKEN 优先）。
@@ -115,6 +56,8 @@ in
       EXA_API_KEY = secrets."openclaw-exa-api-key".path;
       TAVILY_API_KEY = secrets."openclaw-tavily-api-key".path;
       GITHUB_TOKEN = secrets."openclaw-github-token".path;
+      # 内置记忆（memory-core）的 embedding 用（Cloudflare Workers AI）。
+      CF_EMBEDDING_API_KEY = secrets."openclaw-cloudflare-api-token".path;
     };
 
     config = {
@@ -139,43 +82,40 @@ in
       # nix-openclaw 会自动写 plugins.entries.<id>.enabled = true，无需在此重复）。
       tools.web.search.provider = "tavily";
 
-      # A. 语义记忆：机器没有 embedding key，默认的 openai/text-embedding-3-small 会降级成
-      # keyword-only（memory_search ~6s、索引 dirty）。直接关掉；索引范围也收窄成只含 memory。
-      memory.search.enabled = false;
-      memory.search.sources = [ "memory" ];
-
-      # B'. 插件接入（原始形式）：exa / tavily 用 nix-openclaw 生成的包，Honcho 用我们自建的
-      #     root。三者都需显式 enabled；Honcho 还必须开 allowConversationAccess（官方明确：
-      #     不开就不存任何消息）。
-      plugins.load.paths = [
-        "${pkgs.openclawRuntimePlugins.exa}"
-        "${pkgs.openclawRuntimePlugins.tavily}"
-        "${honchoPlugin}"
-      ];
-      plugins.entries = {
-        exa.enabled = true;
-        tavily.enabled = true;
-        "openclaw-honcho" = {
-          enabled = true;
-          hooks.allowConversationAccess = true;
-          config = {
-            # 自建 Honcho（aliyun，经 EasyTier 访问），无需 apiKey。
-            baseUrl = "http://10.144.144.1:8010";
-            workspaceId = "openclaw";
-            # honcho_ask 若太慢可加 timeoutMs（我们的 deriver 有批处理延迟）。
+      # A. 内置记忆检索（memory-core）：接 Cloudflare Workers AI 的 OpenAI 兼容端点做
+      #    embedding，让 workspace 里的 MEMORY.md / USER.md / memory/*.md 能被语义检索。
+      #    记忆系统就是它这一套（workspace Markdown + SQLite 混合检索 + dreaming 巩固 +
+      #    provenance 防注入），没有第二套。
+      #    注意 memory-core 的 embedding 是**索引身份**的一部分：改 provider/model/sources
+      #    后需要 `openclaw memory index --force` 重建索引。
+      memory.search = {
+        enabled = true;
+        provider = "openai-compatible";
+        model = "@cf/qwen/qwen3-embedding-0.6b";
+        remote = {
+          baseUrl = "https://api.cloudflare.com/client/v4/accounts/c6f9a27ce7ae62bb8971fde57e40a28c/ai/v1";
+          # 密钥走环境变量注入（值写 sops 文件路径，nix-openclaw 启动时按文件内容解析）。
+          apiKey = {
+            source = "env";
+            provider = "default";
+            id = "CF_EMBEDDING_API_KEY";
           };
         };
+        # 只索引 memory 来源（MEMORY.md / USER.md / memory/*.md）；不开会话转写索引。
+        # 注意：光写 sources 不够——"cross-conversation recall" 会自动把 sessions 加进来
+        # （实测确实索引了 90 个 session chunk），所以必须同时关 rememberAcrossConversations。
+        # 关它的理由：这台机器内存吃紧，转写索引会多养 transcript worker。
+        sources = [ "memory" ];
+        rememberAcrossConversations = false;
       };
 
       # B. 插件白名单：只保留这台机器实际用到的。
-      #    走原始 load.paths 后模块不再自动追加，故 exa / tavily / openclaw-honcho 都要列；
-      #    telegram 是 bundled channel、由 channels.telegram 激活，不能也不需要放进 allow。
+      #    exa / tavily 由上面的 runtimePlugins 自动追加进 allow；telegram 是 bundled
+      #    channel、由 channels.telegram 激活，不能也不需要放进 allow。
       plugins.allow = [
         "memory-core"
         "opencode-go"
-        "exa"
         "tavily"
-        "openclaw-honcho"
         "document-extract"
         "file-transfer"
         "web-readability"

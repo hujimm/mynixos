@@ -45,4 +45,10 @@
     owner = "openclaw";
     mode = "0400";
   };
+  # Cloudflare Workers AI token：给内置记忆（memory-core）做 embedding 用。
+  # 值取自 aliyun 上同一颗 Cloudflare token，但只放这一颗到本机，不外扩解密范围。
+  sops.secrets."openclaw-cloudflare-api-token" = {
+    owner = "openclaw";
+    mode = "0400";
+  };
 }
