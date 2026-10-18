@@ -51,4 +51,14 @@
     owner = "openclaw";
     mode = "0400";
   };
+  # Cloudflare Origin CA 证书/私钥：给 nginx 提供 claw.liyinuo.tech 的 TLS
+  # （只被 Cloudflare 信任 → 必须经橙云访问；见 ./nginx.nix）。
+  sops.secrets."openclaw-origin-cert" = {
+    owner = "nginx";
+    mode = "0400";
+  };
+  sops.secrets."openclaw-origin-key" = {
+    owner = "nginx";
+    mode = "0400";
+  };
 }

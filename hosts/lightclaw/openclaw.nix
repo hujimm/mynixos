@@ -3,7 +3,8 @@
 # 形态：systemd 用户服务 openclaw-gateway（linger 已开，开机自启）。
 # 权限：默认即 OpenClaw 官方的"单信任域"姿态（exec 无审批）；命令以 openclaw 用户执行，
 #       该用户有免密 sudo，故 agent 需要时可提权。
-# 入口：网关绑 0.0.0.0 但防火墙只对 EasyTier 网卡(tun0)放行 18789，公网不可达。
+# 入口：网关只绑回环；外网经 nginx(443, Cloudflare Origin CA 证书, claw.liyinuo.tech) 反代，
+# 证书/私钥走 sops（见 ./nginx.nix 与 ./sops.nix）。
 { osConfig, config, pkgs, lib, ... }:
 
 let
@@ -76,11 +77,15 @@ in
     config = {
       gateway = {
         mode = "local";
-        # 手机 App 要连：网关默认只绑回环，手机连不上。bind="lan" 会监听 0.0.0.0
-        # （回环照旧可用，本机 CLI 不受影响），再由 NixOS 防火墙只对 EasyTier 网卡(tun0)
-        # 放行 18789 —— 见 hosts/lightclaw/default.nix。公网仍不可达。
-        bind = "lan";
+        # 只绑回环：外网访问走 nginx(443, Cloudflare Origin CA 证书) → 127.0.0.1:18789，
+        # 见 hosts/lightclaw/nginx.nix。这样网关本身不直接暴露。
+        bind = "loopback";
         auth.mode = "token"; # token 值来自 OPENCLAW_GATEWAY_TOKEN
+        # nginx 在回环上转发（带 X-Real-IP / X-Forwarded-*），必须显式信任它这一个来源，
+        # 否则网关把这种"代理形状"的流量判为不可信并返回 403（网关日志会提示这句）。
+        trustedProxies = [ "127.0.0.1" ];
+        # 浏览器访问 Control UI 时的来源白名单（网关只为 loopback 播了默认值）。
+        controlUi.allowedOrigins = [ "https://claw.liyinuo.tech" ];
       };
 
       channels.telegram = {

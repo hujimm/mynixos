@@ -12,15 +12,16 @@ in
   imports = [
     ./hardware.nix
     ./sops.nix
+    ./nginx.nix
     ../../modules/nixos/server
     ../../modules/nixos/network
   ];
 
   networking.hostName = "lightclaw";
 
-  # 手机 App 连网关用：OpenClaw 网关监听 0.0.0.0:18789（见 hosts/lightclaw/openclaw.nix），
-  # 这里只对 EasyTier 网卡放行，公网不可达。令牌走 sops（openclaw-gateway-token）。
-  networking.firewall.interfaces."tun0".allowedTCPPorts = [ 18789 ];
+  # 手机 App 连网关用：网关仍只绑回环，外网经 nginx(443, Cloudflare Origin CA 证书) 反代过去，
+  # 见 ./nginx.nix。所以这里**不再**对 tun0 放行 18789（那道口子已撤）。
+  # 令牌走 sops（openclaw-gateway-token）。
 
   # EasyTier 组网：拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix
   # （本机 = lightclaw，10.144.144.6）。
