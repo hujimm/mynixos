@@ -10,7 +10,10 @@
 
 let
   honchoPort = 8010;
-  image = "ghcr.io/plastic-labs/honcho:latest";
+  # 镜像钉死为已实测通过的那份，不用 :latest（否则以后某次重建悄悄换版本，
+  # config.toml 的 schema 不匹配会静默崩）。这份 digest = 2026-10-16 的 :latest，
+  # rev ed9fe6c，是上游 v3.3.0 之后的 main 构建。升级时手动改这里的 digest。
+  image = "ghcr.io/plastic-labs/honcho@sha256:50cc57c327210a694b3934fe8c3c090fca5b5f0271fe911e6a15ddc752928657";
 
   ocBaseUrl = "https://opencode.ai/inference/go/openai/v1";
   ocModel = "deepseek-v4.1-flash";
@@ -54,6 +57,8 @@ let
     TYPE = "pgvector"
 
     [embedding]
+    # 注意：真正决定库列维度的是环境变量 EMBEDDING_VECTOR_DIMENSIONS
+    # （见 honcho-env 模板）；迁移脚本只读 env，这里的值须与之保持一致。
     VECTOR_DIMENSIONS = 1024
 
     [embedding.model_config]
@@ -67,7 +72,7 @@ let
   ''
   + lib.concatMapStrings chatBlock chatSections;
 
-  # api 入口：镜像自带 /bin/sh，直接跑"迁移 + fastapi(8010)"。
+  # api 入口：镜像自带 /bin/sh，依次跑"迁移 + 维度校准 + fastapi(8010)"。
   # 不用 writeShellScriptBin——它的 shebang 指向 nix 的 bash，镜像里没有。
   apiCmd = [
     "-c"
@@ -178,12 +183,22 @@ in
   };
 
   # 等 Postgres 与建库完成再起容器（oci-containers 的 dependsOn 只串容器）。
+  # 同时给两个容器在 cgroup 层加内存兜底：实测各约 220MB，768M 上限足够，
+  # 万一哪天异常尖峰也只 OOM 自己、不拖垮 1.8G 的本机（含 Postgres）。
   systemd.services.podman-honcho-api = {
     after = [
       "postgresql.service"
       "honcho-db-setup.service"
     ];
     requires = [ "honcho-db-setup.service" ];
+    serviceConfig = {
+      MemoryHigh = "512M";
+      MemoryMax = "768M";
+    };
+  };
+  systemd.services.podman-honcho-deriver.serviceConfig = {
+    MemoryHigh = "512M";
+    MemoryMax = "768M";
   };
 
   # ---- 防火墙：只对 EasyTier 网卡放行 ----
