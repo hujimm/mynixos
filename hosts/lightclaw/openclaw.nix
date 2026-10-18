@@ -4,7 +4,7 @@
 # 权限：默认即 OpenClaw 官方的"单信任域"姿态（exec 无审批）；命令以 openclaw 用户执行，
 #       该用户有免密 sudo，故 agent 需要时可提权。
 # 入口：只监听 127.0.0.1:18789；Telegram 走出站长轮询，不需要任何公网端口。
-{ osConfig, pkgs, ... }:
+{ osConfig, config, pkgs, lib, ... }:
 
 let
   # sops 渲染出的运行时文件路径（只在激活期产生，不进 nix store）。
@@ -25,8 +25,11 @@ in
     #     （上游 workspace-bootstrap-policy 的 GENERATED_WORKSPACE_BOOTSTRAP_FILENAMES）。
     #     **TOOLS.md 已被上游废弃**：运行时不再读它，本地工具约定的正式位置是 AGENTS.md 的
     #     `## Tools` 段（上游有 doctor-tools-md-migration 负责搬过去）。我们本机的工具约定
-    #     已并入 AGENTS.md；TOOLS.md 留成占位说明。之所以不能干脆删掉它的声明，是因为
-    #     这五个字段（agents/soul/tools/identity/user）都是必填、无法只去其一。
+    #     已并入 AGENTS.md。
+    #     但 nix-openclaw（当前 rev）还没跟上：`bootstrapFiles.tools` 是**必填**（无 default），
+    #     而且总会往 TOOLS.md 追加"Nix-managed tools"清单 → 声明层面删不掉、也无法让它为空。
+    #     所以下面的 activation 在物化之后把它删掉，让工作区里不留这个死文件
+    #     （TOOLS.md 源文件本身留作占位说明；将来 nix-openclaw 把 tools 改成可选，就删掉那段 activation）。
     #  2) 官方出厂模板（含"记忆分工/行为红线/主动性"等规则）只在**全新工作区** seed 一次；
     #     我们接管工作区后就拿不到它们了，所以把其中对本机适用的部分手写进了 AGENTS.md。
     workspace.bootstrapFiles = {
@@ -202,4 +205,12 @@ in
   # nix-openclaw 生成的 systemd 用户单元没有 [Install] 段，默认不会被 enable，
   # 所以开机不会自启。这里补上 WantedBy，让它在 linger 下随 default.target 启动。
   systemd.user.services."openclaw-gateway".Install.WantedBy = [ "default.target" ];
+
+  # 上游把 TOOLS.md 废弃了（运行时不再读），但 nix-openclaw 的 `bootstrapFiles.tools` 是必填、
+  # 且每次激活都会把它物化出来并追加"Nix-managed tools"清单 → 物化之后直接删掉，
+  # 让工作区里不留这个死文件。将来 nix-openclaw 让 `tools` 可选时，删掉这段。
+  home.activation.openclawDropRetiredToolsMd =
+    lib.hm.dag.entryAfter [ "openclawWorkspaceFiles" ] ''
+      rm -f ${lib.escapeShellArg "${config.programs.openclaw.workspaceDir}/TOOLS.md"}
+    '';
 }
