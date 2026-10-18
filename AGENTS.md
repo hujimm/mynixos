@@ -47,9 +47,15 @@ Orion 的 NixOS flake，有四个配置输出：`nixosConfigurations.mynixos`（
   重建用默认 systemd-initrd 即可，也免掉 26.11 移除脚本式 initrd 的警告。
 - `hosts/lightclaw/` 是第二台 AWS Lightsail（`nixosConfigurations.lightclaw`，t3.medium、悉尼、
   80G 盘），同样用 nixos-infect 就地安装。与 lightsail 出自**同一 AMI，三个分区的
-  UUID/PARTUUID 完全相同**（装机清理 `/old-root` 后已无 Ubuntu 残留）。目前只 import
-  `modules/nixos/server`：无任何服务，也**未**加入 EasyTier 网格。重建用
-  `nixos-rebuild switch --flake .#lightclaw --target-host lightclaw`（用户执行）；
+  UUID/PARTUUID 完全相同**（装机清理 `/old-root` 后已无 Ubuntu 残留）。
+  它跑**一个 OpenClaw 网关**（`programs.openclaw`，Home Manager 用户服务，见
+  `hosts/lightclaw/openclaw.nix`）。为此本机引入了 Home Manager（flake 里加
+  `home-manager.nixosModules.home-manager`，`useGlobalPkgs`），新增专用用户 `openclaw`
+  （`linger` + 免密 `sudo`），密钥走 sops（`hosts/lightclaw/sops.nix`；本机**不在 EasyTier
+  网格**，故不 import `sops-cloud.nix`，避免连带引入网络口令）。`nixpkgs.overlays` 加入
+  `nix-openclaw`。**仍未加入 EasyTier 网格**。重建用
+  `nixos-rebuild switch --flake .#lightclaw --target-host lightclaw`（用户执行），
+  或在服务器上 `nixos-rebuild switch --flake github:hujimm/mynixos#lightclaw`；
   其装机单文件配置（hostName=lightclaw、2GiB swap+zswap、关闭 systemd-initrd）与 lightsail
   一样不在本仓库。
 - `--target-host` 是“本机构建、拷贝到远端”，**GC root 建在远端**，本机这份闭包无根，

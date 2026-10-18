@@ -1,7 +1,7 @@
 # AWS Lightsail host（nixosConfigurations.lightclaw）。t3.medium、悉尼、80G 盘。
 # 硬件与文件系统见 ./hardware.nix；云主机共用基础见 modules/nixos/server。
-# 目前只作为一台可重建的裸云主机，不加任何服务（也尚未加入 EasyTier 网格）。
-{ ... }:
+# 这台机器跑一个 OpenClaw 网关（Home Manager 用户服务，见 ./openclaw.nix），密钥经 ./sops.nix 解密。
+{ inputs, ... }:
 
 let
   # AWS 密钥对（私钥 ~/.ssh/aws-nix.pem），与 lightsail 同一把；
@@ -11,6 +11,7 @@ in
 {
   imports = [
     ./hardware.nix
+    ./sops.nix
     ../../modules/nixos/server
   ];
 
@@ -25,6 +26,36 @@ in
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [ awsKey ];
   };
+
+  # nix-openclaw 的 overlay（提供 pkgs.openclaw；Home Manager 因 useGlobalPkgs 继承）。
+  nixpkgs.overlays = [ inputs.nix-openclaw.overlays.default ];
+
+  # ---- OpenClaw 运行用户 ----
+  # 专用普通用户：非 root（常驻进程攻击面小），但给免密 sudo 让 agent 能管理系统；
+  # linger 让 systemd 用户服务在开机时启动（无交互登录也常驻）。
+  users.users.openclaw = {
+    isNormalUser = true;
+    home = "/home/openclaw";
+    linger = true;
+  };
+  security.sudo.extraRules = [
+    {
+      users = [ "openclaw" ];
+      commands = [
+        {
+          command = "ALL";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
+  # ---- Home Manager：为 openclaw 用户配置 OpenClaw 网关 ----
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
+  # nix-openclaw 的 Home Manager 模块（提供 programs.openclaw），对所有用户共享。
+  home-manager.sharedModules = [ inputs.nix-openclaw.homeManagerModules.openclaw ];
+  home-manager.users.openclaw = ./openclaw.nix;
 
   system.stateVersion = "26.05";
 }
