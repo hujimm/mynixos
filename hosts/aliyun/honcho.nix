@@ -150,7 +150,7 @@ in
   virtualisation.oci-containers.containers = {
     honcho-api = {
       image = image;
-      entrypoint = [ "${apiEntry}/bin/honcho-api-entry" ];
+      entrypoint = "${apiEntry}/bin/honcho-api-entry";
       environmentFiles = [ envFile ];
       volumes = [
         "/etc/honcho/config.toml:/app/config.toml:ro"
@@ -160,7 +160,7 @@ in
     };
     honcho-deriver = {
       image = image;
-      entrypoint = [ "/app/.venv/bin/python" ];
+      entrypoint = "/app/.venv/bin/python";
       cmd = [
         "-m"
         "src.deriver"
