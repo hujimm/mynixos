@@ -11,7 +11,6 @@
     ./disk-config.nix
     ./sops.nix
     ./mcp-nixos.nix
-    ./honcho.nix
     ../../modules/nixos/server
     ../../modules/nixos/network
     inputs.disko.nixosModules.disko

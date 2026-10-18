@@ -1,4 +1,59 @@
-# aliyun 上的 Honcho 记忆服务（全声明式）。
+# ============================================================================
+# 【已弃用 · 2026-10-18】aliyun 上的 Honcho 自建记忆服务（整份模块，仅存档）
+# ============================================================================
+#
+# 状态：已停用，从构建中摘除。文件保留在这里只为"以后想恢复"时有个准确的起点。
+#
+# 为什么停用：
+#   最终判断是"记忆用 OpenClaw 内置的 memory-core 就够了，不要第二套系统"。
+#   内置那套（workspace Markdown + SQLite 混合检索 + dreaming 巩固 + provenance 防注入）
+#   本身很完善，而且 Honcho 只收对话消息、看不到 workspace 文件；两套并存等于
+#   重复注入 + 双份用户画像 + 额外内存开销（这台机器 RSS 已 1.5-1.6GiB）。
+#   配套的 lightclaw 侧插件打包也一并在 modules/_trash/hm/openclaw-honcho-plugin.nix。
+#
+# ---------------------------------------------------------------------------
+# 【恢复步骤】按顺序做，每步都有坑，别跳
+# ---------------------------------------------------------------------------
+#   1) 把本文件移回 hosts/aliyun/honcho.nix：
+#        git mv modules/_trash/nixos/honcho.nix hosts/aliyun/honcho.nix
+#   2) hosts/aliyun/default.nix 的 imports 里加回：  ./honcho.nix
+#   3) 密钥：本模块用 secrets/honcho.yaml 里的三个键
+#        honcho-db-password / honcho-opencode-api-key / honcho-cloudflare-api-token
+#      该文件的 sops 规则在 modules/nixos/security/.sops.yaml（接收者 orion + aliyun）。
+#      若这条规则被删过，先加回来再 `sops updatekeys`，否则 aliyun 解不开 → 容器起不来。
+#   4) 本机（桌面）留一个 GC root，否则 nightly `nix.gc` 会把只属于 aliyun 的闭包回收，
+#      下次重建又得重编：
+#        nix build .#nixosConfigurations.aliyun.config.system.build.toplevel -o ~/nixos-aliyun
+#   5) 切换：  nixos-rebuild switch --flake .#aliyun --target-host aliyun-ecs
+#      （首次要拉 416MB 镜像 + 跑 DB 迁移，8010 要等 2-3 分钟才监听）
+#   6) 验证清单：
+#        systemctl is-active postgresql honcho-db-setup podman-honcho-api podman-honcho-deriver
+#        podman ps                       # honcho-api / honcho-deriver 都 Up
+#        ss -lntp | grep 8010            # fastapi 在听
+#        curl -s http://10.144.144.1:8010/health      # {"status":"ok"}
+#        sudo -u postgres <pg>/bin/psql -d honcho -c '\dx'   # 要有 vector + pg_trgm
+#        sudo -u postgres <pg>/bin/psql -d honcho -c 'select version_num from alembic_version'
+#      公网必须**不可达**（防火墙只放 tun0），从 lightclaw 经 EasyTier 必须可达。
+#
+# ---------------------------------------------------------------------------
+# 【当时踩过的坑 · 恢复时别重踩】
+# ---------------------------------------------------------------------------
+#   - honcho-db-setup 里不能写裸 `psql`（PATH 里没有），要用
+#     `${config.services.postgresql.package}/bin/psql` 绝对路径。
+#   - 容器的 entrypoint 不能用宿主机 nix store 路径（容器里不存在），也不能用
+#     writeShellScriptBin（shebang 指向 nix 的 bash，镜像里没有）；要用镜像自带的
+#     `/bin/sh -c '<脚本>'`。
+#   - 维度：迁移只建默认 vector(1536)。真正决定库列维度的是**环境变量**
+#     EMBEDDING_VECTOR_DIMENSIONS（env 优先于 config.toml，迁移脚本只读 env）。
+#     官方 bootstrap 是三步：alembic 迁移 → `scripts/configure_embeddings.py --yes`
+#     （ALTER 成目标维度）→ 起 API/deriver。我们把第 2 步并进了 api 的启动脚本。
+#     列维度不对时 deriver 会以 StartupValidationError 拒绝启动（api 会崩溃重启循环）。
+#   - 镜像必须钉 digest（曾用 :latest，后来发现上游 v3.3.0 反而比 latest 旧）。
+#   - 该镜像允许的推断：不设 cache（`[cache] ENABLED=false`，无 Redis）；
+#     deriver 的 representation 有批处理门控，短消息最长 30 分钟才被推导
+#     （REPRESENTATION_BATCH_MAX_AGE_SECONDS=1800），消息本身是即时落库的。
+#   - 端口用 8010：aliyun 的 mcp-nixos 已占 10.144.144.1:8000。
+# ============================================================================
 #
 # 组件：podman + oci-containers(api / deriver) + 原生 Postgres(pgvector)；不开 Redis。
 # 网络：绑 EasyTier 网卡（10.144.144.1），无认证，防火墙只对 tun0 放行 → 依赖覆盖网隔离。
