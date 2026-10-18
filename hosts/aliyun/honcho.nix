@@ -74,6 +74,9 @@ let
     ''
       set -e
       /app/.venv/bin/python scripts/provision_db.py
+      # 官方 bootstrap 第 2 步：迁移只建默认 vector(1536)，须 ALTER 成目标维度
+      # （EMBEDDING_VECTOR_DIMENSIONS=1024）。维度已一致时是 no-op。
+      /app/.venv/bin/python scripts/configure_embeddings.py --yes
       exec /app/.venv/bin/fastapi run --host 0.0.0.0 --port ${toString honchoPort} --workers "''${API_WORKERS:-1}" src/main.py
     ''
   ];
