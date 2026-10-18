@@ -123,12 +123,25 @@ in
 
       # 模型：用 OpenClaw **内置**的 OpenCode Go provider，ref = "opencode-go/<模型id>"，
       # 无需自定义 provider；凭证走上面的 OPENCODE_API_KEY。
+      # 显式把上下文钉成 1000K（Go 目录默认按 200K 处理）。merge 模式只覆盖元数据，
+      # 不影响 provider 的目录发现（models.mode 默认即 merge）。
+      models.providers.opencode-go.models = [
+        {
+          id = "deepseek-v4.1-flash";
+          name = "DeepSeek V4.1 Flash";
+          contextTokens = 1000000;
+        }
+        {
+          id = "longcat-2.5-preview-free";
+          name = "LongCat 2.5 Preview Free";
+          contextTokens = 1000000;
+        }
+      ];
       # 主模型：对话与 agent 工作。
       agents.defaults.model.primary = "opencode-go/deepseek-v4.1-flash";
       # 辅助模型：标题生成、摘要、进度叙述等短任务。
-      # cat-jam-free 是 Go 的"隐藏"模型：未出现在账户 /models 列表里，但实际可用
-      # （实测对 .../inference/go/openai/v1 发请求返回 200）。故直接显式引用。
-      agents.defaults.utilityModel = "opencode-go/cat-jam-free";
+      # cat-jam-free 已下架，改用 Go 目录里的 longcat-2.5-preview-free。
+      agents.defaults.utilityModel = "opencode-go/longcat-2.5-preview-free";
     };
   };
 
