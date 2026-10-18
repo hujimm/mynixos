@@ -84,10 +84,7 @@ in
   # ---- Postgres（原生）+ pgvector ----
   services.postgresql = {
     enable = true;
-    extensions = ps: [
-      ps.pgvector
-      ps.pg_trgm
-    ];
+    extensions = ps: [ ps.pgvector ];
     ensureDatabases = [ "honcho" ];
     ensureUsers = [
       {
