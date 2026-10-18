@@ -25,5 +25,6 @@
     aliyun = 1;
     vostro-3420 = 2;
     lightsail = 5;
+    lightclaw = 6;
   };
 }

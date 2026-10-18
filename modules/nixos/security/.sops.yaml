@@ -17,6 +17,7 @@ creation_rules:
           - *orion
           - *aliyun
           - *lightsail
+          - *lightclaw
   # Vaultwarden 管理令牌：桌面可编辑、lightsail 可解密（其它主机均不需要）
   - path_regex: secrets/vaultwarden\.yaml$
     key_groups:

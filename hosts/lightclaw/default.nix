@@ -13,9 +13,14 @@ in
     ./hardware.nix
     ./sops.nix
     ../../modules/nixos/server
+    ../../modules/nixos/network
   ];
 
   networking.hostName = "lightclaw";
+
+  # EasyTier 组网：拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix
+  # （本机 = lightclaw，10.144.144.6）。用于访问 aliyun 上的 Honcho 记忆服务。
+  my.easytier.enable = true;
 
   users.users.root.openssh.authorizedKeys.keys = [ awsKey ];
 

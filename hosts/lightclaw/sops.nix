@@ -9,7 +9,11 @@
 { inputs, pkgs, ... }:
 
 {
-  imports = [ inputs.sops-nix.nixosModules.sops ];
+  imports = [
+    inputs.sops-nix.nixosModules.sops
+    # EasyTier 口令声明 + easytier-env 模板（本机已加入组网）
+    ../../modules/nixos/security/easytier-secret.nix
+  ];
 
   environment.systemPackages = [ pkgs.sops ];
 
