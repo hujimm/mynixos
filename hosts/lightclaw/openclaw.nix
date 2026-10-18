@@ -81,8 +81,14 @@ in
       # 无需自定义 provider；凭证走上面的 OPENCODE_API_KEY。
       # 主模型：对话与 agent 工作。
       agents.defaults.model.primary = "opencode-go/deepseek-v4.1-flash";
-      # 辅助模型：标题生成、摘要、进度叙述等短任务（cat-jam-free 在 Go 目录里）。
-      agents.defaults.utilityModel = "opencode-go/cat-jam-free";
+      # 辅助模型：标题生成、摘要、进度叙述等短任务。
+      # 注：hermes 用的 cat-jam-free 不在 OpenCode Go 目录里（实测 --all 也没有），
+      # 改用同样便宜的 flash 模型。
+      agents.defaults.utilityModel = "opencode-go/glm-5.3-flash";
     };
   };
+
+  # nix-openclaw 生成的 systemd 用户单元没有 [Install] 段，默认不会被 enable，
+  # 所以开机不会自启。这里补上 WantedBy，让它在 linger 下随 default.target 启动。
+  systemd.user.services."openclaw-gateway".Install.WantedBy = [ "default.target" ];
 }
