@@ -3,7 +3,7 @@
 # 形态：systemd 用户服务 openclaw-gateway（linger 已开，开机自启）。
 # 权限：默认即 OpenClaw 官方的"单信任域"姿态（exec 无审批）；命令以 openclaw 用户执行，
 #       该用户有免密 sudo，故 agent 需要时可提权。
-# 入口：只监听 127.0.0.1:18789；Telegram 走出站长轮询，不需要任何公网端口。
+# 入口：网关绑 0.0.0.0 但防火墙只对 EasyTier 网卡(tun0)放行 18789，公网不可达。
 { osConfig, config, pkgs, lib, ... }:
 
 let
@@ -76,7 +76,10 @@ in
     config = {
       gateway = {
         mode = "local";
-        bind = "loopback"; # 只监听本机
+        # 手机 App 要连：网关默认只绑回环，手机连不上。bind="lan" 会监听 0.0.0.0
+        # （回环照旧可用，本机 CLI 不受影响），再由 NixOS 防火墙只对 EasyTier 网卡(tun0)
+        # 放行 18789 —— 见 hosts/lightclaw/default.nix。公网仍不可达。
+        bind = "lan";
         auth.mode = "token"; # token 值来自 OPENCLAW_GATEWAY_TOKEN
       };
 

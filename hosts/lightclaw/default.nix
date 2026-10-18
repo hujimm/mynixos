@@ -18,6 +18,10 @@ in
 
   networking.hostName = "lightclaw";
 
+  # 手机 App 连网关用：OpenClaw 网关监听 0.0.0.0:18789（见 hosts/lightclaw/openclaw.nix），
+  # 这里只对 EasyTier 网卡放行，公网不可达。令牌走 sops（openclaw-gateway-token）。
+  networking.firewall.interfaces."tun0".allowedTCPPorts = [ 18789 ];
+
   # EasyTier 组网：拓扑与虚拟 IP 见 modules/nixos/network/easytier-nodes.nix
   # （本机 = lightclaw，10.144.144.6）。
   my.easytier.enable = true;
