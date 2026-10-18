@@ -1,19 +1,12 @@
-# TOOLS.md — 可用手段与用法要点
+# TOOLS.md — 已废弃（内容已并入 AGENTS.md 的 `## Tools` 段）
 
-你在一台 NixOS 服务器上，具备 shell 能力（`exec`），并可按需 `sudo`。
+上游 OpenClaw 已废弃本文件：运行时**不再读它**，本地工具/环境约定的正式位置是
+`AGENTS.md` 的 `## Tools` 段（详见 OpenClaw 文档 concepts/agent-workspace 与
+reference/templates/TOOLS.md）。本机的工具约定已搬进 `AGENTS.md`，这里不再维护内容。
 
-## 系统
+之所以还保留这个文件并被 nix-openclaw 声明，是因为 `workspace.bootstrapFiles` 的
+五个字段（agents/soul/tools/identity/user）**都是必填**，无法单独去掉 `tools`
+（见 hosts/lightclaw/openclaw.nix 的注释）。它不会被读，留着无害。
 
-- 包管理是 **Nix**（不是 apt）。临时工具可用 `nix shell nixpkgs#<pkg>` / `nix run`。
-- 服务用 `systemctl`；本机时间按 Asia/Shanghai。
-- 常驻的网关是 `systemctl --user status openclaw-gateway`（你自己）。
-
-## 网络
-
-- 本机只监听回环；出站可用。
-- 如需访问覆盖网，先确认网络状态（本机当前不在 EasyTier 网格）。
-
-## 注意
-
-- 不要直接改 `~/.openclaw` 里的 Nix 托管文件；配置改动走 flake。
-- 长耗时命令放后台并给主人进度；不要静默卡住。
+> 注：nix-openclaw 每次激活还会在本文件后追加一份「Nix-managed tools」清单；
+> 由于本文件已不被读取，那份清单同样不生效（相关 CLI 已列入 AGENTS.md 的 Tools 段）。

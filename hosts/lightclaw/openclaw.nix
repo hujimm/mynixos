@@ -19,10 +19,20 @@ in
     # workspace 引导文件由 Nix 托管（内容在 ./workspace/*.md）。
     # 声明后 nix-openclaw 会强制 skipBootstrap=true（OpenClaw 不再自己 seed），
     # 且每次激活会用源文件覆盖工作区里的副本 —— 要改就改这里的源文件再重建。
+    #
+    # 注意两件与上游有关的实情（2026.10.4）：
+    #  1) 真正组成会话 prompt 的只有 AGENTS.md / SOUL.md / IDENTITY.md / USER.md
+    #     （上游 workspace-bootstrap-policy 的 GENERATED_WORKSPACE_BOOTSTRAP_FILENAMES）。
+    #     **TOOLS.md 已被上游废弃**：运行时不再读它，本地工具约定的正式位置是 AGENTS.md 的
+    #     `## Tools` 段（上游有 doctor-tools-md-migration 负责搬过去）。我们本机的工具约定
+    #     已并入 AGENTS.md；TOOLS.md 留成占位说明。之所以不能干脆删掉它的声明，是因为
+    #     这五个字段（agents/soul/tools/identity/user）都是必填、无法只去其一。
+    #  2) 官方出厂模板（含"记忆分工/行为红线/主动性"等规则）只在**全新工作区** seed 一次；
+    #     我们接管工作区后就拿不到它们了，所以把其中对本机适用的部分手写进了 AGENTS.md。
     workspace.bootstrapFiles = {
       agents = ./workspace/AGENTS.md;
       soul = ./workspace/SOUL.md;
-      tools = ./workspace/TOOLS.md; # nix-openclaw 会在这份内容后追加生成的工具清单
+      tools = ./workspace/TOOLS.md; # 上游已废弃（不被读取）；内容已并入 AGENTS.md 的 Tools 段
       identity = ./workspace/IDENTITY.md;
       user = ./workspace/USER.md;
     };
