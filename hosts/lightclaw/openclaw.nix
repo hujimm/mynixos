@@ -87,11 +87,8 @@ in
         # 浏览器访问 Control UI 时的来源白名单（网关只为 loopback 播了默认值）。
         controlUi.allowedOrigins = [ "https://claw.liyinuo.tech" ];
         # 节点（手机）危险/隐私命令白名单：默认不带，需显式 opt-in。
-        # camera.snap = 手机拍照；reminders.add = 新建提醒。
-        nodes.commands.allow = [
-          "camera.snap"
-          "reminders.add"
-        ];
+        # camera.snap = 手机拍照（reminders.add 这台手机的 App 未实现，故不加）。
+        nodes.commands.allow = [ "camera.snap" ];
       };
 
       channels.telegram = {
