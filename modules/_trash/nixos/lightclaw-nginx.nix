@@ -1,3 +1,18 @@
+# ============================================================================
+# 【已弃用 · 2026-10-19】lightclaw 的 nginx 反代（claw.liyinuo.tech → 网关 WSS）
+# ============================================================================
+#
+# 状态：已停用、从构建中摘除（OpenClaw 整体弃用，见 lightclaw-openclaw.nix 的说明）。
+# 它只为 OpenClaw 网关服务：443 上用 Cloudflare Origin CA 证书反代 127.0.0.1:18789。
+#
+# 恢复：git mv 回 hosts/lightclaw/nginx.nix，并在 hosts/lightclaw/default.nix 的
+#       imports 里加回 ./nginx.nix；密钥 openclaw-origin-cert/key 在 secrets/openclaw.yaml。
+#       另需重建 lightclaw 且保留 sops 声明（见 hosts/lightclaw/sops.nix 的归档说明）。
+#
+# ---------------------------------------------------------------------------
+# 以下是停用前的原始内容
+# ---------------------------------------------------------------------------
+#
 # lightclaw 对外入口：nginx 反代，给 OpenClaw 网关提供 WSS。
 #
 # 证书**不用 ACME**：用的是 Cloudflare **Origin CA** 证书（只被 Cloudflare 信任，有效期 15 年），

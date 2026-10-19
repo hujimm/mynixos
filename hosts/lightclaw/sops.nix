@@ -1,11 +1,16 @@
-# lightclaw 的系统级 sops：只解密 OpenClaw 的密钥。
+# lightclaw 的系统级 sops：最小骨架 + EasyTier 口令（本机已加入组网）。
 #
-# 本机**不在 EasyTier 网格**，故不 import sops-cloud.nix（那会连带引入 easytier-secret.nix，
-# 声明网络口令并要求本机是 easytier.yaml 的接收者）。这里只放 sops-nix 的最小骨架 +
-# 本机自己的密钥声明。
+# 本机**不在 sops-cloud.nix 那条线上**（那是 aliyun/lightsail 云主机共用的骨架），
+# 但已加入 EasyTier 网格，所以 import easytier-secret.nix（声明网络口令 +
+# easytier-env 模板）。
 #
 # age 私钥由本机 SSH host key 派生（sops-nix 内部调用 ssh-to-age）；
 # 本机 age 公钥已列在 modules/nixos/security/.sops.yaml。
+#
+# 原先这里还声明了一整套 openclaw-* 密钥（telegram / gateway / opencode-go / exa /
+# tavily / github / cloudflare + CF Origin 证书）。OpenClaw 已于 2026-10-19 弃用，
+# 声明一并摘除；加密文件 secrets/openclaw.yaml 与 .sops.yaml 里对应的规则**暂时保留**
+# （没删），要恢复见 modules/_trash/nixos/lightclaw-openclaw.nix 的恢复步骤。
 { inputs, pkgs, ... }:
 
 {
@@ -18,47 +23,6 @@
   environment.systemPackages = [ pkgs.sops ];
 
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-  sops.defaultSopsFile = ../../modules/nixos/security/secrets/openclaw.yaml;
-
-  # OpenClaw 密钥：归 openclaw 用户所有（它的 systemd 用户服务要能读）。
-  sops.secrets."openclaw-telegram-bot-token" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-gateway-token" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-opencode-go-api-key" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-exa-api-key" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-tavily-api-key" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-github-token" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  # Cloudflare Workers AI token：给内置记忆（memory-core）做 embedding 用。
-  # 值取自 aliyun 上同一颗 Cloudflare token，但只放这一颗到本机，不外扩解密范围。
-  sops.secrets."openclaw-cloudflare-api-token" = {
-    owner = "openclaw";
-    mode = "0400";
-  };
-  # Cloudflare Origin CA 证书/私钥：给 nginx 提供 claw.liyinuo.tech 的 TLS
-  # （只被 Cloudflare 信任 → 必须经橙云访问；见 ./nginx.nix）。
-  sops.secrets."openclaw-origin-cert" = {
-    owner = "nginx";
-    mode = "0400";
-  };
-  sops.secrets."openclaw-origin-key" = {
-    owner = "nginx";
-    mode = "0400";
-  };
+  # 默认 sopsFile：本机现在唯一在用的密钥文件（easytier-secret.nix 内部也显式指定了它）。
+  sops.defaultSopsFile = ../../modules/nixos/security/secrets/easytier.yaml;
 }

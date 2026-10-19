@@ -7,7 +7,6 @@
     ./packages.nix
     ./nautilus.nix
     ./matlab.nix
-    ./openclaw-desktop.nix
     ./kdeconnect.nix
   ];
 }

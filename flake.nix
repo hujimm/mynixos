@@ -129,14 +129,6 @@
 
     deepseek-harness.url = "github:Moraxyc/deepseek-harness.nix";
 
-    # OpenClaw（自托管 AI agent 网关）。lightclaw 用它的 Home Manager 模块；
-    # 跟随根 nixpkgs 与 home-manager，避免多拉一份 nixpkgs。
-    nix-openclaw = {
-      url = "github:openclaw/nix-openclaw";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
-
     # disko：nixos-anywhere 依赖它做声明式分区（aliyun 云主机用，见 hosts/aliyun/）。
     disko = {
       url = "github:nix-community/disko";
@@ -172,14 +164,12 @@
         modules = [ ./hosts/lightsail ];
       };
 
-      # 另一台 AWS Lightsail（t3.medium，悉尼），同样 nixos-infect 安装；
-      # 跑 OpenClaw 网关（Home Manager 用户服务），未入 EasyTier 网格。见 hosts/lightclaw/。
+      # 另一台 AWS Lightsail（t3.medium，悉尼），同样 nixos-infect 安装。
+      # 原先跑 OpenClaw 网关，2026-10-19 弃用（配置归档在 modules/_trash/nixos/）。
+      # 现在只是普通云主机：EasyTier 组网 + sops 骨架。见 hosts/lightclaw/。
       nixosConfigurations.lightclaw = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/lightclaw
-          home-manager.nixosModules.home-manager
-        ];
+        modules = [ ./hosts/lightclaw ];
       };
     };
 }

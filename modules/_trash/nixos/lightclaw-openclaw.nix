@@ -1,3 +1,54 @@
+# ============================================================================
+# 【已弃用 · 2026-10-19】lightclaw 上的 OpenClaw 网关（整份 Home Manager 模块，仅存档）
+# ============================================================================
+#
+# 状态：已停用、从构建中摘除。保留在此只为"以后想恢复"时有个准确起点。
+#
+# 为什么停用：主人只当玩一下，不再用 OpenClaw。一并归档的相关件：
+#   - modules/_trash/nixos/lightclaw-nginx.nix（claw.liyinuo.tech 的 WSS 反代）
+#   - modules/_trash/nixos/lightclaw-workspace/（AGENTS/SOUL/IDENTITY/USER/TOOLS.md）
+#   - modules/_trash/nixos/openclaw-desktop.nix（桌面笔记本上的官方 Linux 桌面端包）
+#   - modules/_trash/hm/openclaw-honcho-plugin.nix（更早弃用的 Honcho 插件）
+#
+# ---------------------------------------------------------------------------
+# 【恢复步骤】按顺序做
+# ---------------------------------------------------------------------------
+#   1) 文件搬回：  git mv modules/_trash/nixos/lightclaw-openclaw.nix hosts/lightclaw/openclaw.nix
+#                  git mv modules/_trash/nixos/lightclaw-nginx.nix      hosts/lightclaw/nginx.nix
+#                  git mv modules/_trash/nixos/lightclaw-workspace    hosts/lightclaw/workspace
+#   2) flake.nix 加回输入（lightclaw 的 HM 模块与 overlay 都靠它）：
+#        nix-openclaw = {
+#          url = "github:openclaw/nix-openclaw";
+#          inputs.nixpkgs.follows = "nixpkgs";
+#          inputs.home-manager.follows = "home-manager";
+#        };
+#   3) flake.nix 的 lightclaw 配置 modules 里加回： home-manager.nixosModules.home-manager
+#   4) hosts/lightclaw/default.nix 加回：imports 里的 ./nginx.nix、
+#      nixpkgs.overlays = [ inputs.nix-openclaw.overlays.default ];、
+#      users.users.openclaw（linger）+ 免密 sudo、home-manager.* 那几行（见下"归档时的差异"）
+#   5) hosts/lightclaw/sops.nix 加回 openclaw-* 那些 sops.secrets 声明
+#      （密钥在 secrets/openclaw.yaml；规则在 modules/nixos/security/.sops.yaml）
+#   6) 重建：  nixos-rebuild switch --flake .#lightclaw --target-host lightclaw
+#      验证：    sudo -u openclaw -i systemctl --user status openclaw-gateway
+#                curl -sk --resolve claw.liyinuo.tech:443:127.0.0.1 https://claw.liyinuo.tech/
+#
+# 归档时的差异（default.nix 里被摘掉的那几行）：
+#   nixpkgs.overlays = [ inputs.nix-openclaw.overlays.default ];
+#   users.users.openclaw = { isNormalUser = true; home = "/home/openclaw"; linger = true; };
+#   security.sudo.extraRules = [{ users = [ "openclaw" ]; commands = [{ command = "ALL"; options = [ "NOPASSWD" ]; }]; }];
+#   home-manager.useGlobalPkgs = true;
+#   home-manager.useUserPackages = true;
+#   home-manager.sharedModules = [ inputs.nix-openclaw.homeManagerModules.openclaw ];
+#   home-manager.users.openclaw = ./openclaw.nix;
+#
+# 运行时残留（重建后服务即消失，数据不会自动删）：
+#   /home/openclaw/（含 ~/.openclaw 配置、会话 SQLite、记忆库）、用户 openclaw 本身
+#   清理：sudo userdel -r openclaw
+#
+# ---------------------------------------------------------------------------
+# 以下是停用前的原始内容
+# ---------------------------------------------------------------------------
+#
 # OpenClaw 网关（lightclaw）。Home Manager 模块，运行在 openclaw 用户下。
 #
 # 形态：systemd 用户服务 openclaw-gateway（linger 已开，开机自启）。
