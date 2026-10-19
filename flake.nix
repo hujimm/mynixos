@@ -163,13 +163,5 @@
         specialArgs = { inherit inputs; };
         modules = [ ./hosts/lightsail ];
       };
-
-      # 另一台 AWS Lightsail（t3.medium，悉尼），同样 nixos-infect 安装。
-      # 原先跑 OpenClaw 网关，2026-10-19 弃用（配置归档在 modules/_trash/nixos/）。
-      # 现在只是普通云主机：EasyTier 组网 + sops 骨架。见 hosts/lightclaw/。
-      nixosConfigurations.lightclaw = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [ ./hosts/lightclaw ];
-      };
     };
 }

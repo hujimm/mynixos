@@ -6,8 +6,6 @@ keys:
   - &aliyun age1m5qh9pz6n5s3mf7alkw8vld6k2v2xdxplysjc2wwntddjfk8c55q78qhfd
   # lightsail：由其 SSH host key 派生（同上，在 lightsail 上取 pub key）
   - &lightsail age1autpg6dygq7rtzq4aqzc9km8r6vdtmvp9kcqne7rlmkl8v3pmeashnlzne
-  # lightclaw：由其 SSH host key 派生（同上，在 lightclaw 上取 pub key）
-  - &lightclaw age1gg6er8ctgej0zc57ey95vrlq6tc3dnfwc5xjtp4hz9qz46nasf3s9ntzyk
 
 creation_rules:
   # EasyTier 网络口令：桌面 + aliyun + lightsail 都能解密。规则必须排在通用规则前面（sops 取首个匹配）
@@ -17,7 +15,6 @@ creation_rules:
           - *orion
           - *aliyun
           - *lightsail
-          - *lightclaw
   # Vaultwarden 管理令牌：桌面可编辑、lightsail 可解密（其它主机均不需要）
   - path_regex: secrets/vaultwarden\.yaml$
     key_groups:
@@ -36,12 +33,12 @@ creation_rules:
       - age:
           - *orion
           - *lightsail
-  # OpenClaw 网关密钥：桌面可编辑、lightclaw 可解密（其它主机均不需要）
-  - path_regex: secrets/openclaw\.yaml$
+  # Cloudflare Origin CA 证书/私钥（*.liyinuo.tech，15 年）：只有桌面能解，
+  # 哪台主机要在 Cloudflare 后面收 TLS 时再把它加进接收者（然后 sops updatekeys）。
+  - path_regex: secrets/cloudflare-origin\.yaml$
     key_groups:
       - age:
           - *orion
-          - *lightclaw
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
