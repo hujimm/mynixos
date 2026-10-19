@@ -5,10 +5,11 @@
 # 状态：已停用，从构建中摘除。文件保留在这里只为"以后想恢复"时有个准确的起点。
 #
 # 为什么停用：
-#   最终判断是"记忆用 agent 自带的那套就够了，不要第二套系统"。
+#   最终判断是"记忆用 OpenClaw 内置的 memory-core 就够了，不要第二套系统"。
 #   内置那套（workspace Markdown + SQLite 混合检索 + dreaming 巩固 + provenance 防注入）
 #   本身很完善，而且 Honcho 只收对话消息、看不到 workspace 文件；两套并存等于
 #   重复注入 + 双份用户画像 + 额外内存开销（这台机器 RSS 已 1.5-1.6GiB）。
+#   配套的 lightclaw 侧插件打包也一并在 modules/_trash/hm/openclaw-honcho-plugin.nix。
 #
 # ---------------------------------------------------------------------------
 # 【恢复步骤】按顺序做，每步都有坑，别跳
@@ -32,7 +33,7 @@
 #        curl -s http://10.144.144.1:8010/health      # {"status":"ok"}
 #        sudo -u postgres <pg>/bin/psql -d honcho -c '\dx'   # 要有 vector + pg_trgm
 #        sudo -u postgres <pg>/bin/psql -d honcho -c 'select version_num from alembic_version'
-#      公网必须**不可达**（防火墙只放 tun0），从网格内其它机器经 EasyTier 必须可达。
+#      公网必须**不可达**（防火墙只放 tun0），从 lightclaw 经 EasyTier 必须可达。
 #
 # ---------------------------------------------------------------------------
 # 【当时踩过的坑 · 恢复时别重踩】

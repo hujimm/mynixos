@@ -20,6 +20,9 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
 - `nixd` 诊断和 `nixfmt` 格式化由 Zed 自动处理；OpenCode 和用户都不要手动调用它们。
   Zed 的 LSP 补全源/格式化/suppress 集中在 `modules/hm/common/nixd.nix`（当前仅
   `zed-editor.nix` 引用，opencode2 已不接 nixd），改这一处即可。
+- **`modules/_trash/` 里的内容永不删除、永不改写**（文件、目录、其中的注释都算），
+  只有用户明确允许那一次例外。它是历史存档，不是待办列表——"现在不用了""已经死了"
+  都不构成删它的理由；要清理必须先问。
 
 ## 配置入口
 
@@ -66,8 +69,8 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   SSH 公钥、专有服务）留在 `hosts/`。两台云主机的 sops 骨架抽在
   `modules/nixos/security/sops-cloud.nix`，各自的 `sops.nix` 只写 `defaultSopsFile`
   与自己的密钥。
-- `modules/_trash/` 是废弃配置垃圾桶：不会被任何 default.nix 导入，扔进去的文件等系统切换
-  确认无误后再删；不要从里面 import 任何东西。
+- `modules/_trash/` 是废弃配置垃圾桶：不会被任何 default.nix 导入，**扔进去的东西永不删除、
+  永不改写**（见「硬性规则」）；不要从里面 import 任何东西。
 - `modules/hm/common/` 是被模块直接 `import` 的共享数据，不是模块目录。
 
 ## 不可随意破坏的约定
