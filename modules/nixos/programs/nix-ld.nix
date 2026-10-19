@@ -28,7 +28,7 @@
   #   * 实际上只需覆盖“未打包二进制直接 NEEDED 的库”：nixpkgs 的库自身都带
   #     RUNPATH，二级依赖由各自的 RUNPATH 解析。多写不报错，只是冗余。
   #   * nix-ld 只接管动态链接器与库查找路径；程序若还硬编码 /usr/lib、/opt 之类
-  #     的目录结构，仍要 buildFHSEnv 之类的包装（见 matlab.nix 的做法）。
+  #     的目录结构，仍要 buildFHSEnv 之类的包装。
   #
   # rebuild 后验证：
   #   readlink -f /lib64/ld-linux-x86-64.so.2    # 应指向 .../nix-ld/libexec/nix-ld
