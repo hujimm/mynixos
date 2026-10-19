@@ -222,15 +222,6 @@ in
       agents.defaults.model.primary = "opencode-go/deepseek-v4.1-flash";
       # 辅助模型：标题生成、摘要、进度叙述等短任务。
       agents.defaults.utilityModel = "opencode-go/longcat-2.5-preview-free";
-
-      # 心跳：周期保持默认 30m；把"夜里别打扰"从提示词挪到系统强制——
-      # activeHours 之外（23:00–08:00，Asia/Shanghai）系统直接跳过该次心跳，不消耗模型调用。
-      # 这样 AGENTS.md 里不再需要写静默时段（提示词只管"说不说"，调度边界交给系统）。
-      agents.defaults.heartbeat.activeHours = {
-        start = "08:00";
-        end = "23:00";
-        timezone = "Asia/Shanghai";
-      };
     };
   };
 
