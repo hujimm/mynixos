@@ -86,6 +86,12 @@ in
         trustedProxies = [ "127.0.0.1" ];
         # 浏览器访问 Control UI 时的来源白名单（网关只为 loopback 播了默认值）。
         controlUi.allowedOrigins = [ "https://claw.liyinuo.tech" ];
+        # 节点（手机）危险/隐私命令白名单：默认不带，需显式 opt-in。
+        # camera.snap = 手机拍照；reminders.add = 新建提醒。
+        nodes.commands.allow = [
+          "camera.snap"
+          "reminders.add"
+        ];
       };
 
       channels.telegram = {
