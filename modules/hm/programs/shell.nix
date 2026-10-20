@@ -10,6 +10,7 @@ _: {
       ll = "ls -lh";
       la = "ls -lha";
       "..." = "cd ../..";
+      oc = "opencode2";
     };
 
   };
