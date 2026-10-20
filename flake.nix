@@ -29,7 +29,7 @@
       # "https://hermes-agent.cachix.org?priority=50"
 
       # llm-agents.nix（numtide 每日更新的 AI agent 包集合）
-      "https://cache.numtide.com?priority=50"
+      # "https://cache.numtide.com?priority=50"
 
       # deepseek-harness（dsh）Nix 打包缓存
       # "https://deepseek-harness-nix.cachix.org?priority=50"
