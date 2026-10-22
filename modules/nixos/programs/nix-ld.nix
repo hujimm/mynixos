@@ -17,7 +17,7 @@
   #     stub-ld 那边只是 mkDefault，本模块的普通赋值优先级更高，不会冲突。
   #   * nix-ld 2.x 为 NIX_LD 与 NIX_LD_LIBRARY_PATH 编入了默认值
   #     （/run/current-system/sw/share/nix-ld/lib/ld.so 与 .../lib），两者缺省时
-  #     自动回落。所以 systemd 服务（如 hermes-gateway）不吃这两个变量也能用，
+  #     自动回落。所以 systemd 服务不吃这两个变量也能用，
   #     不用往 unit 里补——这点很关键：本模块设置的 environment.sessionVariables
   #     只进登录 shell 的 /etc/set-environment，systemd 用户服务并不读它。
   #   * libraries 是 listOf，按定义拼接：这里写的内容是 **追加** 到模块内置默认集
