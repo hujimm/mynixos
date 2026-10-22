@@ -83,10 +83,8 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   覆盖，不要依赖手动改动。
 - Hermes 桌面端在 `modules/hm/ai-agent/hermes.nix`，从 `hermes-agent` flake（无 CI，独立 pin）
   取包安装，密钥放 `~/.hermes/.env`；升级前先查上游提交，再
-  `nix flake lock --update-input hermes-agent`。桌面没有 Hermes 的 NixOS 服务版，lightsail 的
-  网关也已停用。
-- `modules/hm/ai-agent/` 只有 OpenCode（opencode2）与 Hermes CLI 的安装配置；dsh
-  （deepseek-harness）已弃用。
+  `nix flake lock --update-input hermes-agent`。
+- `modules/hm/ai-agent/` 只有 OpenCode（opencode2）与 Hermes CLI 的安装配置。
 - 注释使用中文；避免为单机配置引入不必要的抽象。
 
 ## Inputs 与操作

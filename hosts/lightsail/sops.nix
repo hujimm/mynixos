@@ -2,9 +2,6 @@
 #
 # 通用骨架（sops-nix 模块、age key 路径、EasyTier 口令声明）见
 # modules/nixos/security/sops-cloud.nix；本机只写自己的 defaultSopsFile 与密钥。
-#
-# Hindsight / hermes 的密钥已随服务停用移出；原文件归档在
-# modules/_trash/projects/lightsail-hermes-hindsight/。
 { config, ... }:
 
 {
