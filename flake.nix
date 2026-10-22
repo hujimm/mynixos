@@ -30,9 +30,6 @@
 
       # llm-agents.nix（numtide 每日更新的 AI agent 包集合）
       # "https://cache.numtide.com?priority=50"
-
-      # deepseek-harness（dsh）Nix 打包缓存
-      # "https://deepseek-harness-nix.cachix.org?priority=50"
     ];
     # 追加在nix.conf的缓存公钥之后
     extra-trusted-public-keys = [
@@ -44,8 +41,6 @@
       # hermes-agent（Tier 2，缓存未必每 rev 都有；密钥经 GitHub 实配案例核实）
       "hermes-agent.cachix.org-1:jN3pjR50Mxi4SESKC/FIMNM6/LCosvPk2VUwzVvebzU="
       "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
-      # deepseek-harness（dsh）Nix 打包缓存
-      "deepseek-harness-nix.cachix.org-1:5NrkwLN9veNMhiINtU5ZeV4isXFhFsOwn6Ms7J1M+TA="
     ];
   };
 
@@ -126,8 +121,6 @@
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";
-
-    deepseek-harness.url = "github:Moraxyc/deepseek-harness.nix";
 
     # disko：nixos-anywhere 依赖它做声明式分区（aliyun 云主机用，见 hosts/aliyun/）。
     disko = {

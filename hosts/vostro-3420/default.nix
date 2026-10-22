@@ -20,10 +20,6 @@
     node = "vostro-3420";
   };
 
-  # deepseek-harness overlay：注入 pkgs.dsh scope（dsh、bundles.*、presets.*）。
-  # HM 因 useGlobalPkgs = true 自动继承，配合 modules/hm/ai-agent/dsh.nix 使用。
-  nixpkgs.overlays = [ inputs.deepseek-harness.overlays.default ];
-
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;

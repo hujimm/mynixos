@@ -9,7 +9,6 @@
   sops = {
     age.keyFile = "/var/lib/sops-nix/key.txt";
     defaultSopsFile = ../../nixos/security/secrets/api-key.yaml;
-    secrets."dsh-env" = { };
     secrets."wallhaven-api-key" = { };
   };
 }
