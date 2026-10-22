@@ -21,18 +21,6 @@ creation_rules:
       - age:
           - *orion
           - *lightsail
-  # Hindsight 密钥：桌面可编辑、lightsail 可解密（其它主机均不需要）
-  - path_regex: secrets/hindsight\.yaml$
-    key_groups:
-      - age:
-          - *orion
-          - *lightsail
-  # hermes 网关密钥：桌面可编辑、lightsail 可解密（其它主机均不需要）
-  - path_regex: secrets/hermes\.yaml$
-    key_groups:
-      - age:
-          - *orion
-          - *lightsail
   # Cloudflare Origin CA 证书/私钥（*.liyinuo.tech，15 年）：只有桌面能解，
   # 哪台主机要在 Cloudflare 后面收 TLS 时再把它加进接收者（然后 sops updatekeys）。
   - path_regex: secrets/cloudflare-origin\.yaml$

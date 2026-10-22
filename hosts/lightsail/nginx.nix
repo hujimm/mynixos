@@ -1,5 +1,5 @@
 # lightsail 对外基础设施：nginx 反代 + Let's Encrypt（ACME）。
-# 全机共用的部分都在这里；各服务（vaultwarden / hindsight / hermes）只声明自己的 vhost。
+# 全机共用的部分都在这里；各服务（vaultwarden）只声明自己的 vhost。
 { ... }:
 
 {
