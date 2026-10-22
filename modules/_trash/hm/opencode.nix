@@ -1,3 +1,4 @@
+# OpenCode v1 的 HM 配置（2026-10 弃用，现用 modules/hm/ai-agent/opencode2.nix）。
 {
   pkgs,
   inputs,
@@ -27,8 +28,7 @@
             NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
           };
           initialization = {
-            # nixd 配置与 zed 共用一份(modules/hm/common/nixd.nix)
-            nixd = import ../common/nixd.nix { };
+            nixd = import ../../hm/common/nixd.nix { };
           };
         };
       };
@@ -37,7 +37,7 @@
 
     tui = {
       theme = "system";
-      scroll_acceleration.enabled = true; # 启用 macOS 风格的滚动加速，让滚动更平滑自然。启用后，快速滚动时速度会增加，慢速移动时仍保持精确。
+      scroll_acceleration.enabled = true;
       diff_style = "auto";
       mouse = true;
       attention = {
@@ -47,6 +47,5 @@
         volume = 0.4;
       };
     };
-
   };
 }

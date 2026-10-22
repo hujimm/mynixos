@@ -18,8 +18,9 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   README/源码/发布信息用 `gh repo view`、`gh api` 或浅克隆（`--depth 1 --sparse`）。
 - `nixd` 诊断和 `nixfmt` 格式化由 Zed 自动处理，不要手动调用；两者的配置在
   `modules/hm/common/nixd.nix`，改这一处即可。
-- **`modules/_trash/` 里的内容永不删除、永不改写**（文件、目录、其中的注释都算），
-  只有用户明确允许那一次例外。它是历史存档，不是待办列表，要清理必须先问。
+- **`modules/_trash/` 是只读的配置片段库**：放以前用过、以后可能再抄的配置，按 `nixos/`、
+  `hm/`、多文件项目一目录来放。进这里的东西只保留配置本身和「换台机器还会再踩的坑」，
+  不写归档日志、恢复步骤、README、密钥接线。要再删或再改先问用户。
 
 ## 配置入口
 
@@ -84,9 +85,9 @@ Orion 的 NixOS flake，有三个配置输出：`nixosConfigurations.mynixos`（
   取包安装，密钥放 `~/.hermes/.env`；升级前先查上游提交，再
   `nix flake lock --update-input hermes-agent`。桌面没有 Hermes 的 NixOS 服务，旧配置只在
   `modules/_trash/nixos/hermes-agent.nix`；lightsail 的网关已停用，归档在
-  `modules/_trash/nixos/lightsail-hermes-hindsight/`。
+  `modules/_trash/lightsail-hermes-hindsight/`。
 - `modules/hm/ai-agent/` 只有 OpenCode（opencode2）与 Hermes CLI 的安装配置；dsh
-  （deepseek-harness）已弃用，配置存档在 `modules/_trash/hm/dsh.nix`（含恢复步骤）。
+  （deepseek-harness）已弃用，配置存档在 `modules/_trash/hm/dsh.nix`。
 - 注释使用中文；避免为单机配置引入不必要的抽象。
 
 ## Inputs 与操作

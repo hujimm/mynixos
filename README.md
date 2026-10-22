@@ -8,7 +8,7 @@ Orion 的单机 NixOS 配置，Flake 仓库。
 - `hosts/vostro-3420/` — 本机硬件与主机级配置
 - `modules/nixos/` — 系统模块
 - `modules/hm/` — Home Manager 模块
-- `modules/_trash/` — 废弃配置垃圾桶
+- `modules/_trash/` — 可复用的废弃配置片段
 - `wallpaper/` — 运行时壁纸目录（不入 store）
 
 
