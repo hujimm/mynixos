@@ -104,6 +104,12 @@ in
           # 鉴权：8888 默认无鉴权，务必开启（密钥走 EnvironmentFile）。
           HINDSIGHT_API_TENANT_EXTENSION = "hindsight_api.extensions.builtin.tenant:ApiKeyTenantExtension";
 
+          # 备份：官方整库导出接口默认关闭。开启后才能用
+          # POST /v1/default/banks/<bank_id>/transfer/export 生成可导入的 ZIP
+          # （导入侧另需 HINDSIGHT_API_ENABLE_DOCUMENT_IMPORT_API=true）。
+          # 仅备份期间需要；平时可关掉减少暴露面。
+          HINDSIGHT_API_ENABLE_DOCUMENT_EXPORT_API = "true";
+
           # 运维：固定 worker id，避免容器重启后旧任务变孤儿。
           HINDSIGHT_API_WORKER_ID = "hindsight-lightsail";
           HINDSIGHT_API_HOST = "0.0.0.0";
