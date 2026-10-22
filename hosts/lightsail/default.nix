@@ -2,7 +2,7 @@
 # 硬件与文件系统见 ./hardware.nix；云主机共用基础见 modules/nixos/server；
 # ./sops.nix、./vaultwarden.nix 是这台机器专有的服务。
 # （hermes 网关与 Hindsight 已停用，配置归档在
-#  modules/_trash/lightsail-hermes-hindsight/。）
+#  modules/_trash/projects/lightsail-hermes-hindsight/。）
 { ... }:
 
 let

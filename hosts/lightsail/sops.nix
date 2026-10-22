@@ -4,7 +4,7 @@
 # modules/nixos/security/sops-cloud.nix；本机只写自己的 defaultSopsFile 与密钥。
 #
 # Hindsight / hermes 的密钥已随服务停用移出；原文件归档在
-# modules/_trash/lightsail-hermes-hindsight/。
+# modules/_trash/projects/lightsail-hermes-hindsight/。
 { config, ... }:
 
 {
