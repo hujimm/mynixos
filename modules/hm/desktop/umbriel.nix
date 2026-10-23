@@ -134,20 +134,20 @@
       # 注意：定义 keybinds 会替换 Umbriel 内置绑定，这里已把要用的全部列出。
       keybinds = {
         # ---------- 应用 ----------
-        "Mod+T" = { action = "spawn:kitty -e fish", repeat = false; };
-        "Super+E" = { action = "spawn:nautilus", repeat = false; };
+        "Mod+T" = { action = "spawn:kitty -e fish"; repeat = false; };
+        "Super+E" = { action = "spawn:nautilus"; repeat = false; };
 
         # ---------- Noctalia ----------
-        "Mod+Shift+V" = { action = "spawn:noctalia msg panel-open clipboard", repeat = false; };
-        "Mod+P" = { action = "spawn:noctalia msg panel-open session", repeat = false; };
-        "Mod+W" = { action = "spawn:noctalia msg panel-open wallpaper", repeat = false; };
-        "Mod+L" = { action = "spawn:noctalia msg session lock", repeat = false; };
-        "Mod+I" = { action = "spawn:noctalia msg settings-open", repeat = false; };
-        "Mod+Alt+Space" = { action = "spawn:noctalia msg panel-toggle launcher", repeat = false; };
+        "Mod+Shift+V" = { action = "spawn:noctalia msg panel-open clipboard"; repeat = false; };
+        "Mod+P" = { action = "spawn:noctalia msg panel-open session"; repeat = false; };
+        "Mod+W" = { action = "spawn:noctalia msg panel-open wallpaper"; repeat = false; };
+        "Mod+L" = { action = "spawn:noctalia msg session lock"; repeat = false; };
+        "Mod+I" = { action = "spawn:noctalia msg settings-open"; repeat = false; };
+        "Mod+Alt+Space" = { action = "spawn:noctalia msg panel-toggle launcher"; repeat = false; };
 
         # ---------- 窗口与焦点 ----------
-        "Mod+O" = { action = "overview-toggle", repeat = false; };
-        "Mod+Q" = { action = "window-close", repeat = false; };
+        "Mod+O" = { action = "overview-toggle"; repeat = false; };
+        "Mod+Q" = { action = "window-close"; repeat = false; };
 
         "Mod+Left" = "window-focus-left";
         "Mod+Down" = "window-focus-down";
@@ -206,20 +206,20 @@
         };
 
         # ---------- 截图 ----------
-        "Print" = { action = "spawn:noctalia msg screenshot-region", repeat = false; };
-        "Ctrl+Print" = { action = "spawn:noctalia msg screenshot-fullscreen", repeat = false; };
+        "Print" = { action = "spawn:noctalia msg screenshot-region"; repeat = false; };
+        "Ctrl+Print" = { action = "spawn:noctalia msg screenshot-fullscreen"; repeat = false; };
         # niri 的 Alt+Print = screenshot-window（niri 内置动作），Umbriel 无对应，故不绑定
 
         # ---------- 音量与亮度（锁屏时仍可用） ----------
-        "XF86AudioRaiseVolume" = { action = "spawn:noctalia msg volume-up", allow_when_locked = true; };
-        "XF86AudioLowerVolume" = { action = "spawn:noctalia msg volume-down", allow_when_locked = true; };
-        "XF86AudioMute" = { action = "spawn:noctalia msg volume-mute", allow_when_locked = true; };
-        "XF86MonBrightnessUp" = { action = "spawn:noctalia msg brightness-up", allow_when_locked = true; };
-        "XF86MonBrightnessDown" = { action = "spawn:noctalia msg brightness-down", allow_when_locked = true; };
+        "XF86AudioRaiseVolume" = { action = "spawn:noctalia msg volume-up"; allow_when_locked = true; };
+        "XF86AudioLowerVolume" = { action = "spawn:noctalia msg volume-down"; allow_when_locked = true; };
+        "XF86AudioMute" = { action = "spawn:noctalia msg volume-mute"; allow_when_locked = true; };
+        "XF86MonBrightnessUp" = { action = "spawn:noctalia msg brightness-up"; allow_when_locked = true; };
+        "XF86MonBrightnessDown" = { action = "spawn:noctalia msg brightness-down"; allow_when_locked = true; };
 
         # ---------- 退出 ----------
         # niri 的 quit 无确认框，Umbriel 默认会弹确认
-        "Mod+Shift+E" = { action = "session-quit:skip-confirmation", repeat = false; };
+        "Mod+Shift+E" = { action = "session-quit:skip-confirmation"; repeat = false; };
       };
     };
   };

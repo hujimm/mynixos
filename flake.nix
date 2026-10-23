@@ -16,8 +16,8 @@
       # noctalia v5
       # "https://noctalia.cachix.org?priority=50"
 
-      # umbriel（Noctalia 团队的 wlroots 合成器，2026-10 试用）
-      # "https://umbriel.cachix.org?priority=50"
+      # umbriel
+      "https://umbriel.cachix.org?priority=50"
 
       # ayugram-desktop
       # "https://ayugram-desktop.cachix.org?priority=50"
