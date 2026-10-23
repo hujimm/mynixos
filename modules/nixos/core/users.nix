@@ -15,4 +15,21 @@
       "networkmanager"
     ];
   };
+
+  # 只对重建与清理放行免密，其余 sudo 仍要密码。
+  security.sudo.extraRules = [
+    {
+      users = [ "orion" ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/nixos-rebuild";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "/run/current-system/sw/bin/nix-collect-garbage";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
 }

@@ -134,6 +134,18 @@
           action = "spawn:nautilus";
           repeat = false;
         };
+        "Mod+Z" = {
+          action = "spawn:zen-beta";
+          repeat = false;
+        };
+        "Mod+G" = {
+          action = "spawn:google-chrome";
+          repeat = false;
+        };
+        "Mod+V" = {
+          action = "spawn:zeditor";
+          repeat = false;
+        };
 
         "Mod+Shift+V" = {
           action = "spawn:noctalia msg panel-open clipboard";
