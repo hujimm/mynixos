@@ -11,10 +11,10 @@
     # 完整声明式 greeter.toml，每次激活时经 tmpfiles L+ 覆盖写入
     # /var/lib/noctalia-greeter/greeter.toml（settings 可以是 attrset / TOML 字符串 / 路径）
     settings = {
-      # 默认会话：niri。取值是会话 .desktop 条目的 Name=，不是文件名；
-      # 匹配大小写不敏感（本机 niri.desktop 的 Name 是 "Niri"，写 "niri" 即可）。
+      # 默认会话：Umbriel。取值是会话 .desktop 条目的 Name=，不是文件名；
+      # 匹配大小写不敏感（本机 umbriel.desktop 的 Name 是 "Umbriel"）。
       # 权威列表：noctalia-greeter sessions
-      session.default = "niri";
+      session.default = "umbriel";
 
       # 默认用户：直接进入密码步骤（Esc 或返回键可回到用户列表）。
       # 必须是 /etc/passwd 中的登录名

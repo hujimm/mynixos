@@ -66,9 +66,8 @@
       url = "github:noctalia-dev/noctalia/cachix";
     };
 
-    # Umbriel 合成器（Noctalia 团队的 wlroots 合成器，2026-10 试用）。
-    # 跟 cachix 分支拿预编译包；不要加 inputs.nixpkgs.follows —— 缓存按上游锁定的
-    # nixpkgs 构建，follows 会让预热缓存全部失效并本地编译 C++23。
+    # 跟 cachix 分支取预编译包。不要加 inputs.nixpkgs.follows：
+    # 缓存按上游锁定的 nixpkgs 构建，follows 会让缓存全部失效。
     umbriel = {
       url = "github:noctalia-dev/umbriel/cachix";
     };
