@@ -5,5 +5,6 @@
     ./env.nix
     ./niri.nix
     ./noctalia.nix
+    ./umbriel.nix
   ];
 }

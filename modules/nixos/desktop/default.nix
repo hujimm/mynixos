@@ -5,5 +5,6 @@
     ./niri.nix
     ./noctalia-greeter.nix
     ./sunshine.nix
+    ./umbriel.nix
   ];
 }

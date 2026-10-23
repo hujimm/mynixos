@@ -16,6 +16,9 @@
       # noctalia v5
       # "https://noctalia.cachix.org?priority=50"
 
+      # umbriel（Noctalia 团队的 wlroots 合成器，2026-10 试用）
+      # "https://umbriel.cachix.org?priority=50"
+
       # ayugram-desktop
       # "https://ayugram-desktop.cachix.org?priority=50"
 
@@ -35,6 +38,7 @@
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "umbriel.cachix.org-1:JfNq/2yg2S6D6z4Z2dVSZrZlDPQTKtexB6GAVLD98nw="
       "ayugram-desktop.cachix.org-1:AZ5EqHrJsAKL5YkZYLPEsb1FdD9QlypUwQ0REcJftgA="
       "tg-owt.cachix.org-1:lp0BukIhSK3EIyLcDhDZ5zABgT48nmNp6t4SnZ0wr8w="
       "fcitx5-vinput.cachix.org-1:XpX3AA6+dDIX4qJhb1QM7sbTwX6/qSlGvW8Z5NK6XdU="
@@ -60,6 +64,13 @@
 
     noctalia = {
       url = "github:noctalia-dev/noctalia/cachix";
+    };
+
+    # Umbriel 合成器（Noctalia 团队的 wlroots 合成器，2026-10 试用）。
+    # 跟 cachix 分支拿预编译包；不要加 inputs.nixpkgs.follows —— 缓存按上游锁定的
+    # nixpkgs 构建，follows 会让预热缓存全部失效并本地编译 C++23。
+    umbriel = {
+      url = "github:noctalia-dev/umbriel/cachix";
     };
 
     # Noctalia Greeter(greetd 登录界面,与 Noctalia v5 配对使用)
