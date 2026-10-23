@@ -15,9 +15,11 @@
 #   - niri 的 hotkey-overlay-title/allow-inhibiting/重复控制按 keybinds 的
 #     repeat / allow_when_inhibited / allow_when_locked 逐条对应
 #   - niri 的 tab-indicator、focus-ring、阴影 spread 没有逐项对应项，取 Umbriel 的最接近键
-{ ... }:
+{ inputs, ... }:
 
 {
+  imports = [ inputs.umbriel.homeModules.default ];
+
   programs.umbriel = {
     enable = true;
 
