@@ -3,7 +3,7 @@
 # 服务本体是 systemd 用户单元（graphical-session.target），随 niri 会话登录启动。
 # 输入注入走 /dev/uinput（模块自动开 hardware.uinput.enable 并装 udev 规则），
 # 不依赖 compositor 的虚拟键盘协议，所以 niri 下键盘、鼠标都正常。
-# 若日志报 /dev/uinput 权限被拒（uaccess 没覆盖到当前会话时），把用户加进 input 组。
+# 若日志报 /dev/uinput 权限被拒，见文件末尾的 input/uinput 组。
 #
 # 抓屏用 wlr-screencopy（niri 支持 v1–v3），不需要 capSysAdmin；KMS 抓屏才要。
 # 只绑 EasyTier 虚拟地址并只对 tun0 放行端口；手机 Moonlight 里手动添加
@@ -40,4 +40,12 @@ in
     allowedTCPPorts = [ 47984 47989 47990 48010 ];
     allowedUDPPorts = [ 47998 47999 48000 48002 48010 ];
   };
+
+  # 虚拟键鼠需要读写 /dev/uinput（hardware.uinput 建的是 root:uinput 0660），
+  # /dev/uhid 归 input 组；uaccess ACL 在设备先于 udev 规则创建时不生效，靠组更稳。
+  # 改完要重新登录（或重启）才会带上新组。
+  users.users.orion.extraGroups = [
+    "input"
+    "uinput"
+  ];
 }
