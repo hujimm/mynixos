@@ -4,6 +4,6 @@
   imports = [
     ./niri.nix
     ./noctalia-greeter.nix
-    ./wayvnc.nix
+    ./sunshine.nix
   ];
 }
