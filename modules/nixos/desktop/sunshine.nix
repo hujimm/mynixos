@@ -28,6 +28,9 @@ in
       # tun0 还没起来时绑定失败，单元按 Restart=on-failure 重试。
       bind_address = "10.144.144.${toString topo.nodes."vostro-3420"}";
       capture = "wlr";
+      # CSRF 默认只认 localhost 变体，经 EasyTier 地址打开 Web UI 必须显式放行 origin，
+      # 否则建账号/配对会报 "Error! Internal Server Error" + CSRF Protection Error。
+      csrf_allowed_origins = "https://10.144.144.${toString topo.nodes."vostro-3420"}:47990";
     };
   };
 
