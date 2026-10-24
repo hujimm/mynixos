@@ -14,7 +14,10 @@
     ];
   };
 
-  hardware.bluetooth.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false;
+  };
   services.libinput.enable = true;
 
   hardware.enableRedistributableFirmware = true;

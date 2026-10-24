@@ -43,7 +43,11 @@
           disable_while_typing = true;
           natural_scroll = true;
         };
-        focus.follows_mouse = true;
+        focus = {
+          follows_mouse = true;
+          # 只在目标窗口完全可见时才跟随，避免光标掠过屏幕边缘时焦点被抢、画面跟着滑动。
+          follows_mouse_max_scroll = 0.0;
+        };
         cursor = {
           theme = "phinger-cursors-dark";
           size = 24;
