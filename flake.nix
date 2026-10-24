@@ -96,11 +96,10 @@
     };
 
     # AyuGram(Telegram 增强客户端,NixOS flake 打包)
-    # README 要求 git 类型 + submodules,否则构建失败
+    # 钉 tag:上游 cachix.yml 只在改动 nix 文件的提交上构建,release 分支的新提交未必有缓存。
+    # 不加 follows(README 建议加):换成本仓库的 nixpkgs 会让 derivation 全变,上游缓存全 miss。
     ayugram-desktop = {
-      type = "git";
-      submodules = true;
-      url = "https://github.com/ndfined-crp/ayugram-desktop/";
+      url = "github:ndfined-crp/ayugram-desktop/ayugram-v7.2.9";
     };
 
     # 锁定 v2.3.26：上游自 v2.3.5 起在发布 tag 时自动跑 nix-cache，

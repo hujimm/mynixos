@@ -8,17 +8,16 @@
       "locked": {
         "lastModified": 1791705831,
         "narHash": "sha256-GUKbnBdZ7nn4rH05xjhk5EpIXxmFkXFcWIL+6RF84vg=",
-        "ref": "refs/heads/release",
+        "owner": "ndfined-crp",
+        "repo": "ayugram-desktop",
         "rev": "021928c9babe2853c59e839efdd8a44614f2f826",
-        "revCount": 444,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/ndfined-crp/ayugram-desktop/"
+        "type": "github"
       },
       "original": {
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/ndfined-crp/ayugram-desktop/"
+        "owner": "ndfined-crp",
+        "ref": "ayugram-v7.2.9",
+        "repo": "ayugram-desktop",
+        "type": "github"
       }
     },
     "bun2nix": {

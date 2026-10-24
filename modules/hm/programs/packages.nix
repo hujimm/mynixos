@@ -114,7 +114,7 @@ in
     openssl
 
     # AyuGram:Telegram 增强客户端(Ghost Mode、防撤回等)
-    inputs.ayugram-desktop.packages.${pkgs.stdenv.hostPlatform.system}.ayugram-desktop
+    inputs.ayugram-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
 
   ];
 }
